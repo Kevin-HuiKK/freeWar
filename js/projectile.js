@@ -7,7 +7,7 @@ export class Projectile {
     this.target = target;
     this.damage = damage;
     this.color = color;
-    this.speed = 480;
+    this.speed = 520;
   }
 
   update(dt) {
@@ -15,6 +15,7 @@ export class Projectile {
     const dx = this.target.x - this.x;
     const dy = this.target.y - this.y;
     const d = Math.hypot(dx, dy);
+    this.facing = Math.atan2(dy, dx);
     const step = this.speed * dt;
     if (step >= d) {
       const res = applyDamage(this.target, this.damage);
@@ -25,10 +26,18 @@ export class Projectile {
     return 'flying';
   }
 
-  draw(ctx) {
-    ctx.fillStyle = this.color;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
-    ctx.fill();
+  draw(ctx, sprite) {
+    if (sprite) {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.facing || 0);
+      ctx.drawImage(sprite, -6, -3, 12, 6);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 }

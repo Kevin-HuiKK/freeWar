@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" width="12" height="6">
+  <defs>
+    <linearGradient id="bullet" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd88a"/>
+      <stop offset="50%" stop-color="#d4a040"/>
+      <stop offset="100%" stop-color="#8a6520"/>
+    </linearGradient>
+  </defs>
+  <!-- Tracer trail -->
+  <ellipse cx="3" cy="3" rx="3" ry="1" fill="#ffe070" opacity="0.4"/>
+  <ellipse cx="4" cy="3" rx="2" ry="0.8" fill="#ffeb90" opacity="0.6"/>
+  <!-- Bullet body -->
+  <rect x="5" y="2" width="5" height="2" fill="url(#bullet)" rx="0.3"/>
+  <!-- Pointed tip -->
+  <polygon points="10,2 12,3 10,4" fill="#d4a040"/>
+  <!-- Highlight -->
+  <line x1="6" y1="2.3" x2="10" y2="2.3" stroke="#fff5c0" stroke-width="0.3" opacity="0.8"/>
+</svg>

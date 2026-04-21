@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <radialGradient id="sShadow" cx="0.5" cy="0.6" r="0.5">
+      <stop offset="0%" stop-color="rgba(0,0,0,0.35)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="24" cy="40" rx="16" ry="4" fill="url(#sShadow)"/>
+  <!-- Prone body (ghillie) - elongated horizontal -->
+  <ellipse cx="16" cy="28" rx="10" ry="6" fill="#3e5029"/>
+  <!-- Ghillie camo patches -->
+  <ellipse cx="12" cy="26" rx="2.5" ry="1.5" fill="#5a6a38" opacity="0.9"/>
+  <ellipse cx="18" cy="30" rx="2" ry="1.2" fill="#2a3818" opacity="0.9"/>
+  <ellipse cx="20" cy="25" rx="1.8" ry="1" fill="#647a4a" opacity="0.9"/>
+  <ellipse cx="10" cy="30" rx="1.5" ry="1" fill="#2a3818" opacity="0.9"/>
+  <ellipse cx="22" cy="27" rx="1.5" ry="0.8" fill="#8a8560" opacity="0.8"/>
+  <ellipse cx="6" cy="27" rx="2" ry="1" fill="#647a4a" opacity="0.8"/>
+  <!-- Arms extending to rifle -->
+  <ellipse cx="25" cy="28" rx="3" ry="1.5" fill="#3e5029"/>
+  <!-- Long rifle (barrel extending right) -->
+  <rect x="22" y="27.2" width="22" height="1.6" fill="#1a1a1a"/>
+  <rect x="26" y="26.5" width="6" height="0.8" fill="#2a2a2a"/>
+  <!-- Scope -->
+  <rect x="24" y="25" width="4" height="2" fill="#1a1a1a"/>
+  <circle cx="25" cy="26" r="0.8" fill="#4a6a8a"/>
+  <!-- Bipod -->
+  <line x1="40" y1="28" x2="38" y2="32" stroke="#2a2a2a" stroke-width="0.8"/>
+  <line x1="40" y1="28" x2="42" y2="32" stroke="#2a2a2a" stroke-width="0.8"/>
+  <!-- Head (hooded ghillie, left) -->
+  <circle cx="10" cy="20" r="5" fill="#4a5d2e"/>
+  <ellipse cx="8" cy="18" rx="1.5" ry="1" fill="#3e5029"/>
+  <ellipse cx="12" cy="17" rx="1.2" ry="0.8" fill="#647a4a"/>
+  <ellipse cx="14" cy="20" rx="1" ry="0.7" fill="#2a3818"/>
+  <!-- Face peek -->
+  <ellipse cx="12" cy="21" rx="2" ry="1.2" fill="#a8845a"/>
+</svg>

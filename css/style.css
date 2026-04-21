@@ -1,13 +1,17 @@
 * { box-sizing: border-box; }
+
 body {
   margin: 0;
-  background: linear-gradient(#0a1b2a 0%, #071225 45%, #03080f 100%);
-  color: #eee;
-  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #e8e4d8;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Consolas", "Courier New", sans-serif;
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  background:
+    linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.75)),
+    url("assets/bg/battlefield.svg") center / cover no-repeat fixed,
+    #1a1510;
 }
 
 /* ---------- Iceberg scene ---------- */
@@ -22,10 +26,11 @@ body {
   font-size: 40px;
   letter-spacing: 4px;
   color: #d9ecff;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.8);
 }
 #iceberg-scene .subtitle {
   margin: 4px 0 16px;
-  opacity: 0.7;
+  opacity: 0.75;
   font-size: 14px;
 }
 #iceberg-scene .hint {
@@ -39,30 +44,6 @@ body {
   height: 580px;
   margin: 0 auto;
 }
-#iceberg .water-line {
-  position: absolute;
-  left: -40px;
-  right: -40px;
-  top: 11%;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, #7ab9e8, transparent);
-  opacity: 0.6;
-}
-#iceberg .iceberg-shape {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-#iceberg .iceberg-shape polygon {
-  fill: url(#ice-grad);
-  stroke: rgba(255,255,255,0.25);
-  stroke-width: 1;
-}
-#iceberg .iceberg-shape {
-  filter: drop-shadow(0 0 18px rgba(120,180,230,0.25));
-}
-/* gradient via defs-in-CSS trick using background on the svg via background color layers */
 #iceberg::before {
   content: '';
   position: absolute;
@@ -79,8 +60,17 @@ body {
   -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 700' preserveAspectRatio='none'><polygon points='240,20 300,60 330,140 500,150 470,700 30,700 0,150 170,140 200,60' fill='white'/></svg>") center/100% 100% no-repeat;
           mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 700' preserveAspectRatio='none'><polygon points='240,20 300,60 330,140 500,150 470,700 30,700 0,150 170,140 200,60' fill='white'/></svg>") center/100% 100% no-repeat;
   pointer-events: none;
+  filter: drop-shadow(0 0 18px rgba(120,180,230,0.25));
 }
-#iceberg .iceberg-shape { display: none; }
+#iceberg .water-line {
+  position: absolute;
+  left: -40px;
+  right: -40px;
+  top: 11%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #7ab9e8, transparent);
+  opacity: 0.6;
+}
 #iceberg .layer {
   position: absolute;
   left: 50%;
@@ -119,53 +109,223 @@ body {
 }
 #stage {
   display: flex;
-  gap: 12px;
-  padding: 12px;
+  gap: 14px;
+  padding: 14px;
+  background: rgba(20, 18, 14, 0.7);
+  border: 1px solid #3a3228;
+  border-radius: 6px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(90,75,55,0.3);
+}
+#battle-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* --- HUD --- */
+#hud {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 8px 14px;
+  background: linear-gradient(#2a251d, #1a1510);
+  border: 1px solid #4a3d2a;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 6px rgba(0,0,0,0.5);
+  font-family: "Consolas", "Courier New", "PingFang SC", monospace;
+  min-height: 36px;
+}
+.hud-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #e8dcb0;
+  letter-spacing: 1px;
+}
+.hud-cell .hud-icon {
+  font-size: 17px;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.5));
+}
+.hud-cell.hud-wave {
+  flex: 1;
+  gap: 10px;
+}
+.hud-wave-bar {
+  flex: 1;
+  height: 8px;
+  background: #0d0a07;
+  border: 1px solid #4a3d2a;
+  border-radius: 2px;
+  overflow: hidden;
+  min-width: 80px;
+}
+#hud-wave-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #8a6a2a, #d4a040, #ffe070);
+  transition: width 0.3s ease;
+}
+#hud-gold { color: #ffe070; }
+#hud-base { color: #f08080; }
+
+/* --- Canvas --- */
+#canvas-wrap {
+  position: relative;
+  border: 1px solid #2a2418;
+  box-shadow: 0 0 0 2px #4a3d2a, 0 4px 20px rgba(0,0,0,0.7);
 }
 canvas {
-  background: #3a5f3a;
   display: block;
+  background: #3d5526;
 }
+
+/* Toast over canvas */
+#toast {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  background: rgba(40, 10, 10, 0.85);
+  color: #ffd8a0;
+  border: 1px solid #7a3a2a;
+  border-radius: 3px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.7);
+  opacity: 0;
+}
+#toast.toast-anim {
+  animation: toast-fade 1.5s ease-out forwards;
+}
+@keyframes toast-fade {
+  0%   { opacity: 0; transform: translate(-50%, -6px); }
+  15%  { opacity: 1; transform: translate(-50%, 0); }
+  75%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -6px); }
+}
+
+/* --- Menu --- */
 #menu {
-  width: 170px;
+  width: 178px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-#menu button:hover {
-  filter: brightness(1.2);
+.menu-title {
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: #a8946a;
+  padding: 2px 4px 6px;
+  border-bottom: 1px solid #3a3228;
+  margin-bottom: 2px;
+}
+.unit-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  background: linear-gradient(#2d2820, #1e1a13);
+  border: 1.5px solid #4a3d2a;
+  border-radius: 3px;
+  color: #e8dcb0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: transform 0.12s, border-color 0.12s, background 0.12s, opacity 0.12s;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.unit-btn:hover:not(.locked) {
+  background: linear-gradient(#3a3428, #24201a);
+  border-color: #7a6238;
+}
+.unit-btn.selected {
+  border-color: #ffc040;
+  background: linear-gradient(#4a3a1e, #2a2010);
+  box-shadow: 0 0 0 1px #ffc040, 0 2px 8px rgba(255,192,64,0.2);
+  transform: translateY(-1px);
+}
+.unit-btn.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+.unit-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid #3a3020;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.unit-icon img {
+  width: 38px;
+  height: 38px;
+  display: block;
+}
+.unit-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.unit-name {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+.unit-cost {
+  font-size: 12px;
+  color: #ffe070;
+  font-family: "Consolas", "Courier New", monospace;
 }
 
+/* --- End overlay --- */
 #end-overlay {
   position: absolute;
   inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(0,0,0,0.55);
-  pointer-events: auto;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(2px);
 }
 #end-overlay .end-card {
-  padding: 24px 32px;
-  background: #222;
-  border: 2px solid #666;
-  border-radius: 10px;
+  padding: 28px 40px;
+  background: linear-gradient(#2a251d, #1a1510);
+  border: 2px solid #7a6238;
+  border-radius: 4px;
   text-align: center;
-  min-width: 260px;
+  min-width: 280px;
+  box-shadow: 0 0 0 1px rgba(255,192,64,0.2), 0 10px 30px rgba(0,0,0,0.8);
 }
 #end-overlay #end-text {
-  font-size: 40px;
-  font-weight: 700;
-  margin-bottom: 16px;
+  font-size: 46px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.6);
 }
 #end-overlay button {
-  padding: 10px 20px;
-  font-size: 16px;
-  background: #444;
-  color: #fff;
-  border: 2px solid #888;
-  border-radius: 6px;
-  cursor: pointer;
+  padding: 10px 24px;
+  font-size: 15px;
   font-family: inherit;
+  letter-spacing: 3px;
+  background: linear-gradient(#3a3020, #1a1410);
+  color: #ffd880;
+  border: 1.5px solid #7a6238;
+  border-radius: 3px;
+  cursor: pointer;
 }
-#end-overlay button:hover { background: #555; }
+#end-overlay button:hover {
+  background: linear-gradient(#4a3c28, #24201a);
+  border-color: #ffc040;
+}

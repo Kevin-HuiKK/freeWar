@@ -1,14 +1,14 @@
 import { tileCenter } from './map.js';
 
 export class Enemy {
-  constructor(type, config, level) {
+  constructor(type, config, level, sprite) {
     this.type = type;
     this.maxHp = config.hp;
     this.hp = config.hp;
     this.speed = config.speed;
     this.bounty = config.bounty;
-    this.color = config.color;
     this.radius = config.radius;
+    this.sprite = sprite;
     this.tile = level.grid.tile;
     this.path = level.path;
     this.waypointIdx = 0;
@@ -16,6 +16,7 @@ export class Enemy {
     const first = tileCenter(this.path[0][0], this.path[0][1], this.tile);
     this.x = first.x;
     this.y = first.y;
+    this.facing = 0;
   }
 
   update(dt) {
@@ -25,6 +26,7 @@ export class Enemy {
     const dx = tc.x - this.x;
     const dy = tc.y - this.y;
     const dist = Math.hypot(dx, dy);
+    this.facing = Math.atan2(dy, dx);
     const step = this.speed * this.tile * dt;
     if (step >= dist) {
       this.x = tc.x;
@@ -39,16 +41,33 @@ export class Enemy {
   }
 
   draw(ctx) {
-    ctx.fillStyle = this.color;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fill();
-    const w = this.radius * 2;
+    const size = 40;
+    if (this.sprite) {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.facing);
+      ctx.drawImage(this.sprite, -size / 2, -size / 2, size, size);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = '#a33';
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    this.drawHpBar(ctx);
+  }
+
+  drawHpBar(ctx) {
+    const w = 30;
     const hpRatio = Math.max(0, this.hp / this.maxHp);
-    ctx.fillStyle = '#000';
-    ctx.fillRect(this.x - this.radius, this.y - this.radius - 6, w, 3);
-    ctx.fillStyle = '#4c4';
-    ctx.fillRect(this.x - this.radius, this.y - this.radius - 6, w * hpRatio, 3);
+    const x = this.x - w / 2;
+    const y = this.y - 24;
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(x - 1, y - 1, w + 2, 5);
+    ctx.fillStyle =
+      hpRatio > 0.6 ? '#6cdc5c' :
+      hpRatio > 0.3 ? '#e8c94a' : '#e84a4a';
+    ctx.fillRect(x, y, w * hpRatio, 3);
   }
 
   get alive() {

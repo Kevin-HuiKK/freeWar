@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a3d30"/>
+      <stop offset="40%" stop-color="#4a4a35"/>
+      <stop offset="70%" stop-color="#3a3225"/>
+      <stop offset="100%" stop-color="#1a1510"/>
+    </linearGradient>
+    <linearGradient id="hazeGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(180,140,80,0.15)"/>
+      <stop offset="50%" stop-color="rgba(120,90,50,0.2)"/>
+      <stop offset="100%" stop-color="rgba(60,40,20,0.3)"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.75" cy="0.3" r="0.15">
+      <stop offset="0%" stop-color="rgba(255,220,140,0.5)"/>
+      <stop offset="100%" stop-color="rgba(255,180,80,0)"/>
+    </radialGradient>
+    <filter id="blur1"><feGaussianBlur stdDeviation="3"/></filter>
+    <filter id="blur2"><feGaussianBlur stdDeviation="1.5"/></filter>
+  </defs>
+  <!-- Sky base -->
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <!-- Atmospheric haze overlay -->
+  <rect width="1920" height="1080" fill="url(#hazeGrad)"/>
+  <!-- Sun glow -->
+  <rect width="1920" height="1080" fill="url(#sun)"/>
+  <!-- Distant mountains (darker far) -->
+  <path d="M 0 540 L 120 460 L 260 500 L 380 440 L 520 490 L 640 430 L 780 480 L 900 420 L 1040 470 L 1180 420 L 1320 480 L 1460 430 L 1600 490 L 1740 440 L 1920 490 L 1920 1080 L 0 1080 Z" fill="#2a2418" opacity="0.85" filter="url(#blur1)"/>
+  <!-- Middle mountains -->
+  <path d="M 0 640 L 100 580 L 240 610 L 380 560 L 520 600 L 680 560 L 820 610 L 960 570 L 1120 610 L 1260 570 L 1420 620 L 1580 580 L 1740 630 L 1920 600 L 1920 1080 L 0 1080 Z" fill="#3a2e1c" opacity="0.9" filter="url(#blur2)"/>
+  <!-- Smoke plumes -->
+  <g opacity="0.35">
+    <ellipse cx="380" cy="520" rx="80" ry="160" fill="#8a7560" filter="url(#blur1)"/>
+    <ellipse cx="960" cy="480" rx="100" ry="200" fill="#7a6550" filter="url(#blur1)"/>
+    <ellipse cx="1500" cy="540" rx="70" ry="140" fill="#9a8570" filter="url(#blur1)"/>
+  </g>
+  <!-- Building silhouettes on horizon -->
+  <g fill="#1a1410" opacity="0.85">
+    <rect x="380" y="600" width="50" height="40"/>
+    <rect x="420" y="590" width="40" height="50"/>
+    <polygon points="440,590 460,570 480,590 480,640 440,640"/>
+    <rect x="950" y="610" width="35" height="30"/>
+    <rect x="985" y="600" width="45" height="40"/>
+    <polygon points="1025,600 1050,580 1075,600 1075,640 1025,640"/>
+    <rect x="1480" y="620" width="40" height="35"/>
+    <rect x="1520" y="610" width="50" height="45"/>
+  </g>
+  <!-- Foreground dark dirt -->
+  <rect y="700" width="1920" height="380" fill="#1a1410"/>
+  <!-- Foreground texture (subtle noise via ellipses) -->
+  <g fill="#2a2015" opacity="0.5">
+    <ellipse cx="150" cy="800" rx="100" ry="20"/>
+    <ellipse cx="480" cy="900" rx="140" ry="25"/>
+    <ellipse cx="820" cy="850" rx="120" ry="22"/>
+    <ellipse cx="1180" cy="920" rx="130" ry="24"/>
+    <ellipse cx="1550" cy="830" rx="110" ry="20"/>
+    <ellipse cx="1800" cy="900" rx="90" ry="18"/>
+  </g>
+  <!-- Barbed wire silhouette in foreground -->
+  <g stroke="#3a3028" stroke-width="2" fill="none" opacity="0.5">
+    <path d="M 0 960 Q 80 940 160 960 Q 240 980 320 960 Q 400 940 480 960 Q 560 980 640 960 Q 720 940 800 960 Q 880 980 960 960 Q 1040 940 1120 960 Q 1200 980 1280 960 Q 1360 940 1440 960 Q 1520 980 1600 960 Q 1680 940 1760 960 Q 1840 980 1920 960"/>
+  </g>
+</svg>

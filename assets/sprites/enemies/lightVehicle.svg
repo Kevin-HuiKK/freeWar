@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
+  <defs>
+    <linearGradient id="lvBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7a2e20"/>
+      <stop offset="100%" stop-color="#3a1810"/>
+    </linearGradient>
+    <radialGradient id="lvShadow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="rgba(0,0,0,0.4)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="20" cy="36" rx="15" ry="3" fill="url(#lvShadow)"/>
+  <!-- Wheels / tires -->
+  <rect x="3" y="10" width="5" height="6" fill="#1a1a1a" rx="1"/>
+  <rect x="3" y="24" width="5" height="6" fill="#1a1a1a" rx="1"/>
+  <rect x="32" y="10" width="5" height="6" fill="#1a1a1a" rx="1"/>
+  <rect x="32" y="24" width="5" height="6" fill="#1a1a1a" rx="1"/>
+  <!-- Tire treads -->
+  <line x1="3.5" y1="12" x2="7.5" y2="12" stroke="#3a3a3a" stroke-width="0.4"/>
+  <line x1="3.5" y1="14" x2="7.5" y2="14" stroke="#3a3a3a" stroke-width="0.4"/>
+  <line x1="32.5" y1="12" x2="36.5" y2="12" stroke="#3a3a3a" stroke-width="0.4"/>
+  <line x1="32.5" y1="14" x2="36.5" y2="14" stroke="#3a3a3a" stroke-width="0.4"/>
+  <line x1="3.5" y1="26" x2="7.5" y2="26" stroke="#3a3a3a" stroke-width="0.4"/>
+  <line x1="3.5" y1="28" x2="7.5" y2="28" stroke="#3a3a3a" stroke-width="0.4"/>
+  <line x1="32.5" y1="26" x2="36.5" y2="26" stroke="#3a3a3a" stroke-width="0.4"/>
+  <line x1="32.5" y1="28" x2="36.5" y2="28" stroke="#3a3a3a" stroke-width="0.4"/>
+  <!-- Chassis -->
+  <rect x="7" y="9" width="26" height="22" fill="url(#lvBody)" rx="1.5"/>
+  <!-- Hood / front -->
+  <rect x="7" y="9" width="26" height="7" fill="#8b3628" opacity="0.5"/>
+  <!-- Windshield -->
+  <rect x="10" y="16" width="20" height="4" fill="#3a3a4a"/>
+  <rect x="11" y="16.5" width="4" height="1" fill="#6a6a8a" opacity="0.6"/>
+  <rect x="17" y="16.5" width="4" height="1" fill="#6a6a8a" opacity="0.6"/>
+  <rect x="23" y="16.5" width="4" height="1" fill="#6a6a8a" opacity="0.6"/>
+  <!-- Cabin seats hint -->
+  <ellipse cx="15" cy="22" rx="2" ry="2.5" fill="#2a1010"/>
+  <ellipse cx="25" cy="22" rx="2" ry="2.5" fill="#2a1010"/>
+  <!-- Rear bed -->
+  <rect x="10" y="26" width="20" height="4" fill="#4a1818"/>
+  <rect x="12" y="27" width="16" height="2" fill="#3a1212"/>
+  <!-- Headlights (rear because facing down) -->
+  <circle cx="11" cy="30" r="0.8" fill="#ffdd44"/>
+  <circle cx="29" cy="30" r="0.8" fill="#ffdd44"/>
+  <!-- Top-mounted gun -->
+  <rect x="19" y="6" width="2" height="6" fill="#2a2a2a"/>
+  <rect x="17" y="4" width="6" height="3" fill="#3a3a3a" rx="0.5"/>
+</svg>

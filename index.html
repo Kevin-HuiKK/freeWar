@@ -11,9 +11,6 @@
     <p class="subtitle">le'o 的塔防 · 选择难度</p>
     <div id="iceberg">
       <div class="water-line"></div>
-      <svg class="iceberg-shape" viewBox="0 0 500 700" preserveAspectRatio="none">
-        <polygon points="240,20 300,60 330,140 500,150 470,700 30,700 0,150 170,140 200,60" />
-      </svg>
       <div class="layer" data-layer="1" data-unlocked="true" style="top: 4%;">
         <span class="layer-name">希望层</span>
         <span class="layer-tag">第 1 层</span>
@@ -32,8 +29,25 @@
 
   <div id="level-scene" hidden>
     <div id="stage">
-      <canvas id="game" width="800" height="480"></canvas>
-      <aside id="menu"></aside>
+      <div id="battle-pane">
+        <div id="hud">
+          <div class="hud-cell"><span class="hud-icon">💰</span><span id="hud-gold">0</span></div>
+          <div class="hud-cell"><span class="hud-icon">❤️</span><span id="hud-base">0/0</span></div>
+          <div class="hud-cell hud-wave">
+            <span class="hud-icon">🌊</span>
+            <span id="hud-wave-label">1/5</span>
+            <div class="hud-wave-bar"><div id="hud-wave-fill"></div></div>
+          </div>
+          <div class="hud-cell"><span class="hud-icon">🏔️</span><span id="hud-level">—</span></div>
+        </div>
+        <div id="canvas-wrap">
+          <canvas id="game" width="640" height="384"></canvas>
+          <div id="toast" hidden></div>
+        </div>
+      </div>
+      <aside id="menu">
+        <div class="menu-title">放置单位</div>
+      </aside>
     </div>
     <div id="end-overlay" hidden>
       <div class="end-card">

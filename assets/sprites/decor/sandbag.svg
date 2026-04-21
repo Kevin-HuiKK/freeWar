@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" width="48" height="32">
+  <defs>
+    <linearGradient id="sbBag" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c4a575"/>
+      <stop offset="50%" stop-color="#a08550"/>
+      <stop offset="100%" stop-color="#705a30"/>
+    </linearGradient>
+  </defs>
+  <!-- Shadow -->
+  <ellipse cx="24" cy="30" rx="22" ry="2" fill="rgba(0,0,0,0.3)"/>
+  <!-- Bottom row -->
+  <ellipse cx="10" cy="22" rx="9" ry="5" fill="url(#sbBag)"/>
+  <ellipse cx="24" cy="22" rx="9" ry="5" fill="url(#sbBag)"/>
+  <ellipse cx="38" cy="22" rx="9" ry="5" fill="url(#sbBag)"/>
+  <!-- Top row (offset) -->
+  <ellipse cx="17" cy="12" rx="9" ry="5" fill="url(#sbBag)"/>
+  <ellipse cx="31" cy="12" rx="9" ry="5" fill="url(#sbBag)"/>
+  <!-- Stitching / seams -->
+  <g stroke="#4a3a1e" stroke-width="0.5" fill="none" opacity="0.7">
+    <path d="M 3 22 Q 10 20 17 22"/>
+    <path d="M 17 22 Q 24 20 31 22"/>
+    <path d="M 31 22 Q 38 20 45 22"/>
+    <path d="M 10 12 Q 17 10 24 12"/>
+    <path d="M 24 12 Q 31 10 38 12"/>
+  </g>
+  <!-- Highlights -->
+  <ellipse cx="10" cy="19" rx="6" ry="1.5" fill="#d4bd85" opacity="0.5"/>
+  <ellipse cx="24" cy="19" rx="6" ry="1.5" fill="#d4bd85" opacity="0.5"/>
+  <ellipse cx="38" cy="19" rx="6" ry="1.5" fill="#d4bd85" opacity="0.5"/>
+  <ellipse cx="17" cy="9" rx="6" ry="1.5" fill="#d4bd85" opacity="0.5"/>
+  <ellipse cx="31" cy="9" rx="6" ry="1.5" fill="#d4bd85" opacity="0.5"/>
+</svg>

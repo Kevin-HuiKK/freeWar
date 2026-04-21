@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
+  <defs>
+    <radialGradient id="hiShadow" cx="0.5" cy="0.6" r="0.5">
+      <stop offset="0%" stop-color="rgba(0,0,0,0.4)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+    </radialGradient>
+    <linearGradient id="hiArmor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7a2525"/>
+      <stop offset="100%" stop-color="#3a1010"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="20" cy="35" rx="14" ry="3.5" fill="url(#hiShadow)"/>
+  <!-- Heavy rifle -->
+  <rect x="21" y="19" width="16" height="2" fill="#1a1a1a"/>
+  <rect x="36" y="19.3" width="2" height="1.4" fill="#2a2a2a"/>
+  <rect x="19" y="20" width="3" height="4" fill="#2a2a2a"/>
+  <!-- Torso (heavy armor) -->
+  <ellipse cx="20" cy="22" rx="10" ry="8" fill="url(#hiArmor)"/>
+  <!-- Armor plates -->
+  <rect x="14" y="18" width="12" height="4" fill="#5a1818" rx="0.5" opacity="0.85"/>
+  <rect x="14" y="23" width="12" height="4" fill="#4a1515" rx="0.5" opacity="0.85"/>
+  <!-- Plate rivets -->
+  <circle cx="15" cy="20" r="0.6" fill="#a8a8a8"/>
+  <circle cx="25" cy="20" r="0.6" fill="#a8a8a8"/>
+  <circle cx="15" cy="25" r="0.6" fill="#a8a8a8"/>
+  <circle cx="25" cy="25" r="0.6" fill="#a8a8a8"/>
+  <!-- Shoulder pauldrons -->
+  <ellipse cx="11" cy="18" rx="3" ry="2" fill="#3a1010"/>
+  <ellipse cx="29" cy="18" rx="3" ry="2" fill="#3a1010"/>
+  <!-- Metal trim -->
+  <line x1="10" y1="22" x2="30" y2="22" stroke="#a8a8a8" stroke-width="0.5" opacity="0.7"/>
+  <!-- Head / heavy helmet -->
+  <circle cx="20" cy="12" r="5.5" fill="#5a2020"/>
+  <path d="M 14.5 10 Q 14.5 5 20 5 Q 25.5 5 25.5 10 L 26 12 L 14 12 Z" fill="#3a1010"/>
+  <!-- Helmet visor -->
+  <rect x="15" y="11" width="10" height="2" fill="#1a1010"/>
+  <rect x="16.5" y="11.3" width="1.5" height="1.4" fill="#aa6060"/>
+  <rect x="22" y="11.3" width="1.5" height="1.4" fill="#aa6060"/>
+  <!-- Helmet ridge -->
+  <path d="M 18 6 Q 20 4.5 22 6" fill="none" stroke="#a8a8a8" stroke-width="0.6" opacity="0.8"/>
+</svg>
