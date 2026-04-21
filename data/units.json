@@ -1,0 +1,7 @@
+{
+  "militia":  { "name": "民兵",    "cost": 10,  "range": 2, "damage":  5, "fireRate": 1.0, "color": "#d4a373", "projectileColor": "#fff" },
+  "archer":   { "name": "弓箭手",  "cost": 15,  "range": 3, "damage":  8, "fireRate": 1.2, "color": "#8b5a2b", "projectileColor": "#eee" },
+  "rifleman": { "name": "步枪兵",  "cost": 40,  "range": 3, "damage": 15, "fireRate": 1.5, "color": "#556b2f", "projectileColor": "#ff0" },
+  "sniper":   { "name": "狙击手",  "cost": 100, "range": 6, "damage": 60, "fireRate": 0.5, "color": "#2f4f4f", "projectileColor": "#f84" },
+  "apc":      { "name": "装甲车",  "cost": 500, "range": 4, "damage": 40, "fireRate": 2.0, "color": "#4b4b4b", "projectileColor": "#fa0" }
+}
