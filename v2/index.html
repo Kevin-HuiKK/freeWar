@@ -59,13 +59,42 @@
     <!-- Center: battlefield with both panels beside -->
     <div id="stage">
 
-      <!-- LEFT: unit menu -->
+      <!-- LEFT: unit menu + hero slot -->
       <aside class="panel" id="menu-units">
         <header class="panel-head">
           <span class="title">单位 · UNITS</span>
         </header>
         <div class="panel-sub">攻击兵 ▸ 自动推进</div>
         <div class="menu-scroll" id="menu-units-list"></div>
+
+        <div id="hero-section">
+          <header class="panel-head" style="border-top: 1px dashed var(--khaki-dark); padding-top: 8px; margin-top: 4px;">
+            <span class="title" style="color: var(--amber-glow);">⚔ 英雄 · HEROES</span>
+          </header>
+          <div class="panel-sub">特殊 · 可点击技能</div>
+          <div class="menu-scroll" id="menu-heroes-list"></div>
+          <div id="hero-active" hidden>
+            <div class="hero-card">
+              <div class="hero-portrait"><img id="hero-portrait-img" src="" alt=""/></div>
+              <div class="hero-body">
+                <div class="hero-name" id="hero-name"></div>
+                <div class="hero-title" id="hero-title"></div>
+                <div class="hero-hp">
+                  <div class="hp-bar"><div class="hp-bar-fill ally" id="hero-hp-fill"></div></div>
+                  <span id="hero-hp-text" class="label-mono"></span>
+                </div>
+              </div>
+            </div>
+            <button id="skill-btn" class="skill-btn" type="button" disabled>
+              <span class="skill-cd-ring"><svg viewBox="0 0 36 36"><circle id="skill-cd-circle" cx="18" cy="18" r="15" fill="none" stroke="rgba(0,0,0,0.6)" stroke-width="3" stroke-dasharray="94.2" stroke-dashoffset="0"/></svg></span>
+              <span class="skill-icon">⚡</span>
+              <span class="skill-meta">
+                <span class="skill-name" id="skill-name">技能</span>
+                <span class="skill-hint" id="skill-hint">冷却中</span>
+              </span>
+            </button>
+          </div>
+        </div>
       </aside>
 
       <!-- CENTER: scrollable battlefield -->

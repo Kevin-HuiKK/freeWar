@@ -109,3 +109,90 @@ export function showEnd(result) {
 }
 
 export function hideEnd() { $('end-overlay').hidden = true; }
+
+/**
+ * Build a list of hero purchase cards.
+ * Selecting one triggers the purchase (not placement — heroes spawn at flag).
+ */
+export function buildHeroMenu(listEl, heroesData, onBuy) {
+  listEl.innerHTML = '';
+  const btns = {};
+  for (const [key, h] of Object.entries(heroesData)) {
+    const el = document.createElement('div');
+    el.className = 'mc hero-mc';
+    el.innerHTML = `
+      <div class="mc-icon"><img src="../assets/sprites/units/${h.sprite}.svg" alt=""/></div>
+      <div class="mc-meta">
+        <div class="mc-name">${h.name}</div>
+        <div class="mc-role">${h.skill.name} · CD ${h.skill.cooldown}s</div>
+        <div class="mc-cost">$${h.cost}</div>
+      </div>`;
+    el.addEventListener('click', () => {
+      if (el.classList.contains('locked')) return;
+      onBuy(key);
+    });
+    listEl.appendChild(el);
+    btns[key] = el;
+  }
+  return {
+    setAffordable(fn, hasActive) {
+      for (const [k, b] of Object.entries(btns)) {
+        b.classList.toggle('locked', hasActive || !fn(heroesData[k].cost));
+      }
+    }
+  };
+}
+
+/**
+ * Show or hide the "active hero" panel on the left sidebar.
+ */
+export function showActiveHero(hero, skill) {
+  $('hero-active').hidden = false;
+  $('hero-portrait-img').src = `../assets/sprites/units/${hero.typeKey === 'captain' ? 'rifleman' : hero.typeKey === 'medic' ? 'archer' : 'sniper'}.svg`;
+  $('hero-name').textContent = hero.name;
+  $('hero-title').textContent = hero.title;
+  $('skill-name').textContent = skill.name;
+  $('skill-hint').textContent = 'READY';
+}
+
+export function hideActiveHero() {
+  $('hero-active').hidden = true;
+}
+
+/**
+ * Called every frame while an active hero exists.
+ */
+export function updateHeroPanel(hero) {
+  const ratio = Math.max(0, hero.hp / hero.maxHp);
+  $('hero-hp-fill').style.width = (ratio * 100) + '%';
+  $('hero-hp-text').textContent = `${Math.ceil(hero.hp)}/${hero.maxHp}`;
+
+  const btn = $('skill-btn');
+  const circle = $('skill-cd-circle');
+  const hint = $('skill-hint');
+  const cd = hero.skill.cooldownLeft;
+  const total = hero.skill.cooldown;
+
+  if (cd > 0) {
+    btn.disabled = true;
+    btn.classList.remove('active');
+    hint.textContent = `CD ${cd.toFixed(1)}s`;
+    const circumference = 2 * Math.PI * 15;
+    const offset = circumference * (1 - cd / total);
+    circle.setAttribute('stroke-dashoffset', offset);
+  } else {
+    btn.disabled = false;
+    hint.textContent = '准备就绪 · 点击激活';
+    circle.setAttribute('stroke-dashoffset', 0);
+  }
+}
+
+export function setSkillTargetingMode(active) {
+  const btn = $('skill-btn');
+  const canvas = document.getElementById('game');
+  const field = document.getElementById('field');
+  btn.classList.toggle('active', active);
+  canvas.classList.toggle('targeting', active);
+  field.classList.toggle('targeting-mode', active);
+  $('skill-hint').textContent = active ? '点地图施放 · ESC 取消' : ($('skill-btn').disabled ? '冷却中' : '准备就绪 · 点击激活');
+}
