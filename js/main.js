@@ -6,6 +6,7 @@ import { Unit } from './unit.js';
 import { buildUnitMenu, attachCanvasInput, updateHud, showToast } from './input.js';
 import { setScene, getScene, onSceneChange } from './scene.js';
 import { loadSprites } from './assets.js';
+import { AudioSystem } from './audio.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -23,6 +24,9 @@ const [levels, enemiesData, unitsData, sprites] = await Promise.all([
   loadSprites()
 ]);
 
+const audio = new AudioSystem();
+window.__freewarAudio = audio; // expose for mute button handler in HTML
+
 // ----- Level state -----
 let level, tile, scheduler, economy, menu, gameOver;
 let enemies, units, projectiles, occupied, baseHP;
@@ -30,6 +34,7 @@ let feedbacks = [];
 let hoverCell = null;
 let selectedUnit = 'militia';
 let detachInput;
+let lastSpawnWave = -1;
 
 function startLevel(levelKey) {
   level = levels[levelKey];
@@ -49,6 +54,7 @@ function startLevel(levelKey) {
   gameOver = null;
   feedbacks = [];
   hoverCell = null;
+  lastSpawnWave = -1;
 
   menu = buildUnitMenu(menuEl, unitsData, sprites, (key) => {
     selectedUnit = key;
@@ -71,16 +77,19 @@ function handleTileClick(col, row, px, py) {
   const reason = validatePlacement(col, row);
   if (reason) {
     pushFeedback(px, py, reason);
+    audio.play('error', 150);
     return;
   }
   const cfg = unitsData[selectedUnit];
   if (!economy.spend(cfg.cost)) {
     pushFeedback(px, py, '金币不够');
+    audio.play('error', 150);
     return;
   }
   const key = `${col},${row}`;
   occupied.add(key);
   units.push(new Unit(selectedUnit, cfg, col, row, tile, sprites.units[selectedUnit]));
+  audio.play('place');
 }
 
 function validatePlacement(col, row) {
@@ -100,14 +109,30 @@ function pushFeedback(x, y, text) {
 document.querySelectorAll('#iceberg .layer').forEach((el) => {
   el.addEventListener('click', () => {
     if (el.dataset.unlocked !== 'true') return;
+    audio.resume();
     setScene('level');
     startLevel('hopeLayer');
+    audio.startBgm();
   });
 });
 
 backBtn.addEventListener('click', () => {
+  audio.stopBgm();
   setScene('iceberg');
 });
+
+// Mute button in HUD
+const muteBtn = document.getElementById('hud-mute');
+function syncMuteBtn() {
+  muteBtn.textContent = audio.isMuted() ? '🔇' : '🔊';
+  muteBtn.setAttribute('aria-label', audio.isMuted() ? '已静音（点击恢复）' : '静音');
+}
+muteBtn.addEventListener('click', () => {
+  audio.resume();
+  audio.toggleMute();
+  syncMuteBtn();
+});
+syncMuteBtn();
 
 onSceneChange((name) => {
   icebergScene.hidden = name !== 'iceberg';
@@ -135,16 +160,25 @@ function stepLevel(dt) {
   economy.tick(dt);
 
   const toSpawn = scheduler.tick(dt);
+  if (toSpawn.length > 0 && scheduler.currentWaveIndex !== lastSpawnWave) {
+    audio.play('wave');
+    lastSpawnWave = scheduler.currentWaveIndex;
+  }
   for (const type of toSpawn) {
     enemies.push(new Enemy(type, enemiesData[type], level, sprites.enemies[type]));
   }
 
   for (const u of units) {
-    u.update(dt, enemies, (p) => projectiles.push(p));
+    u.update(dt, enemies, (p) => {
+      projectiles.push(p);
+      audio.play('shoot', 40);
+    });
   }
 
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const status = projectiles[i].update(dt);
+    if (status === 'hit') audio.play('hit', 50);
+    else if (status === 'killed') audio.play('kill', 90);
     if (status !== 'flying') projectiles.splice(i, 1);
   }
 
@@ -157,6 +191,7 @@ function stepLevel(dt) {
     const status = enemies[i].update(dt);
     if (status === 'reached-base') {
       baseHP = Math.max(0, baseHP - 1);
+      audio.play('baseHit', 60);
       enemies.splice(i, 1);
     }
   }
@@ -175,6 +210,8 @@ function endGame(result) {
   endText.textContent = result === 'win' ? '胜利！' : '失败';
   endText.style.color = result === 'win' ? '#ffeb6b' : '#ff6b6b';
   endOverlay.hidden = false;
+  audio.stopBgm();
+  audio.play(result === 'win' ? 'win' : 'lose');
 }
 
 function render() {
