@@ -1,0 +1,26 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: #222;
+  color: #eee;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#stage {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+}
+canvas {
+  background: #3a5f3a;
+  display: block;
+}
+#menu {
+  width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
