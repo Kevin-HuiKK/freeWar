@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>freeWar 2.0 · 工业废墟</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <nav class="mockup-nav">
+    <span class="nav-tag">FREEWAR</span>
+    <a href="../index.html">v1 经典</a>
+    <a href="index.html" class="active">v2.0 双方对攻</a>
+  </nav>
+
+  <main id="app">
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-cell gold">
+        <span class="hud-icon">💰</span>
+        <div>
+          <div class="label-micro">金币 · CREDITS</div>
+          <div class="val" id="hud-gold">0</div>
+        </div>
+      </div>
+      <div class="hud-cell ally">
+        <span class="hud-icon">⚑</span>
+        <div style="flex:1">
+          <div class="label-micro">我方旗 · ALLY FLAG</div>
+          <div class="val" id="hud-ally-flag">0/0</div>
+          <div class="hp-bar"><div class="hp-bar-fill ally" id="hud-ally-fill"></div></div>
+        </div>
+      </div>
+      <div class="hud-cell enemy">
+        <span class="hud-icon">⚑</span>
+        <div style="flex:1">
+          <div class="label-micro">敌方旗 · HOSTILE FLAG</div>
+          <div class="val" id="hud-enemy-flag">0/0</div>
+          <div class="hp-bar"><div class="hp-bar-fill enemy" id="hud-enemy-fill"></div></div>
+        </div>
+      </div>
+      <div class="hud-cell timer">
+        <span class="hud-icon">⏱</span>
+        <div>
+          <div class="label-micro">战斗时长 · T+</div>
+          <div class="val" id="hud-timer">00:00</div>
+        </div>
+      </div>
+      <div class="hud-cell">
+        <span class="hud-icon">⚙</span>
+        <div>
+          <div class="label-micro">难度 · PROTOCOL</div>
+          <div class="val" style="font-size:15px" id="hud-protocol">B · 普通</div>
+        </div>
+      </div>
+      <button id="hud-mute" type="button">🔊</button>
+    </div>
+
+    <!-- Center: battlefield with both panels beside -->
+    <div id="stage">
+
+      <!-- LEFT: unit menu -->
+      <aside class="panel" id="menu-units">
+        <header class="panel-head">
+          <span class="title">单位 · UNITS</span>
+        </header>
+        <div class="panel-sub">攻击兵 ▸ 自动推进</div>
+        <div class="menu-scroll" id="menu-units-list"></div>
+      </aside>
+
+      <!-- CENTER: scrollable battlefield -->
+      <section class="field-wrap">
+        <span class="field-corner tl">◄ REC · CITY-07 · 工业废墟</span>
+        <span class="field-corner tr" id="field-zoom">▶ LIVE · T 00:00</span>
+        <span class="field-corner bl">GRID · SECTOR B-12 · 12.4 km²</span>
+
+        <div class="minimap">
+          <div class="minimap-head">
+            <span>◎ 战场雷达</span>
+            <span>2400 × 900</span>
+          </div>
+          <svg viewBox="0 0 240 90" xmlns="http://www.w3.org/2000/svg" id="minimap-svg">
+            <rect width="240" height="90" fill="#1a1a18"/>
+            <rect x="0"   y="0" width="38" height="90" fill="#1a2838" opacity="0.5"/>
+            <rect x="202" y="0" width="38" height="90" fill="#381a1a" opacity="0.5"/>
+            <g fill="#3a3830">
+              <rect x="62" y="32" width="16" height="20"/>
+              <rect x="100" y="18" width="22" height="30"/>
+              <rect x="108" y="54" width="26" height="22"/>
+              <rect x="140" y="36" width="14" height="14"/>
+              <rect x="162" y="22" width="18" height="28"/>
+              <rect x="170" y="58" width="22" height="18"/>
+            </g>
+            <polyline fill="none" stroke="#d4a43a" stroke-width="1.2" stroke-dasharray="3 3"
+              points="22,45 62,45 72,28 104,28 114,58 154,58 164,32 204,32 220,45"/>
+            <g id="minimap-units"></g>
+            <circle cx="22"  cy="45" r="4" fill="#4a8ac7"/>
+            <circle cx="220" cy="45" r="4" fill="#e14a3a"/>
+            <rect class="minimap-viewport" id="minimap-viewport" x="0" y="0" width="80" height="90"/>
+          </svg>
+        </div>
+
+        <div class="field" id="field">
+          <div class="field-canvas">
+            <img src="assets/bg/map.svg" id="map-bg" draggable="false" alt=""/>
+            <canvas id="game" width="2400" height="900"></canvas>
+            <div id="toast" hidden></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: building menu -->
+      <aside class="panel" id="menu-buildings">
+        <header class="panel-head">
+          <span class="title">建筑 · BUILDINGS</span>
+        </header>
+        <div class="panel-sub">防御塔 / 建造物</div>
+        <div class="menu-scroll" id="menu-buildings-list"></div>
+      </aside>
+
+    </div>
+
+    <!-- bottom status strip -->
+    <div id="status-strip">
+      <span class="chip"><span class="dot ok"></span>AI 对手 · 运行中</span>
+      <span class="chip"><span class="dot warn"></span><span id="stat-units">己方 0 · 敌方 0</span></span>
+      <span class="chip"><span class="dot ok"></span><span id="stat-structures">建筑 0 / 8</span></span>
+      <span style="color: #8a7a55;">点击左侧选兵 → 点我方区域空格放置 · 拖动可滚动地图</span>
+    </div>
+
+    <!-- end overlay -->
+    <div id="end-overlay" hidden>
+      <div class="end-card">
+        <div id="end-text"></div>
+        <div id="end-sub" class="label-mono"></div>
+        <div class="end-actions">
+          <button id="btn-restart" type="button" class="btn btn--primary">▸ 再来一局</button>
+          <a href="../index.html" class="btn btn--ghost">回到 v1</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

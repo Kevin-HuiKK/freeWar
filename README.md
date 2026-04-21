@@ -4,7 +4,8 @@
 
 ## 🎮 在线试玩
 
-<https://kevin-huikk.github.io/freeWar/>
+- **v1 经典**（塔防 · 冰山难度）：<https://kevin-huikk.github.io/freeWar/>
+- **v2.0 双方对攻**（夺旗 · 工业废墟）：<https://kevin-huikk.github.io/freeWar/v2/>
 
 （任何浏览器打开即玩，手机 / 平板 / 电脑都行）
 

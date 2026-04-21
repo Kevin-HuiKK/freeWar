@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>freeWar 2.0 · Cover</title>
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    .cover-page {
+      max-width: 1440px;
+      margin: 0 auto;
+      min-height: calc(100vh - 64px);
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(280px, 340px) 1fr;
+      grid-template-rows: auto 1fr auto;
+      gap: 24px;
+    }
+
+    /* —— Telex / daily briefing strip —— */
+    .telex-strip {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      height: 40px;
+      padding: 0 18px;
+      background: linear-gradient(180deg, var(--metal-dark), #1a1813);
+      border: 1px solid var(--khaki-dark);
+      border-radius: 2px;
+      overflow: hidden;
+      gap: 14px;
+    }
+    .telex-badge {
+      flex-shrink: 0;
+      padding: 4px 10px;
+      background: var(--amber);
+      color: var(--olive-abyss);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      border-radius: 1px;
+      text-transform: uppercase;
+    }
+    .telex-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--red-hot);
+      box-shadow: 0 0 8px var(--red-hot);
+      animation: blink 1.4s infinite;
+    }
+    @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.2; } }
+
+    /* —— Left: menu dossier —— */
+    .menu-panel {
+      padding: 22px 20px;
+      position: relative;
+    }
+    .menu-heading {
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+      border-bottom: 1px dashed var(--khaki-dark);
+    }
+    .menu-heading .title {
+      font-family: var(--font-hero);
+      font-size: 22px;
+      color: var(--paper-bleached);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .menu-heading .sub {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      color: var(--amber);
+      margin-top: 4px;
+    }
+    .menu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      list-style: none;
+    }
+    .menu-item {
+      display: grid;
+      grid-template-columns: 42px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 10px;
+      background: linear-gradient(180deg, rgba(47,59,31,0.5), rgba(20,24,13,0.5));
+      border: 1px solid transparent;
+      border-left: 2px solid var(--khaki-dark);
+      transition: all 0.14s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    .menu-item:hover {
+      background: linear-gradient(180deg, rgba(90,109,58,0.35), rgba(47,59,31,0.5));
+      border-color: var(--amber-dim);
+      border-left-color: var(--amber);
+      transform: translateX(2px);
+    }
+    .menu-item.primary {
+      background: linear-gradient(180deg, rgba(212,164,58,0.12), rgba(47,59,31,0.7));
+      border-color: var(--amber-dim);
+      border-left-color: var(--amber);
+    }
+    .menu-item.primary:hover {
+      background: linear-gradient(180deg, rgba(212,164,58,0.2), rgba(47,59,31,0.8));
+      box-shadow: var(--shadow-glow-amber);
+    }
+    .menu-num {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--amber);
+      letter-spacing: 0.15em;
+      background: rgba(11,14,7,0.6);
+      padding: 4px 6px;
+      border: 1px solid var(--amber-dim);
+      border-radius: 2px;
+      text-align: center;
+    }
+    .menu-name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: 0.14em;
+      color: var(--paper);
+      text-transform: uppercase;
+    }
+    .menu-item.primary .menu-name { color: var(--amber-glow); text-shadow: 0 0 10px rgba(255,212,106,0.4); }
+    .menu-hint {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--khaki);
+      letter-spacing: 0.15em;
+    }
+    .menu-arrow {
+      color: var(--khaki);
+      transition: color 0.14s, transform 0.14s;
+    }
+    .menu-item:hover .menu-arrow {
+      color: var(--amber);
+      transform: translateX(3px);
+    }
+
+    .menu-footer {
+      margin-top: 22px;
+      padding-top: 14px;
+      border-top: 1px dashed var(--khaki-dark);
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-typewriter);
+      font-size: 12px;
+      color: var(--khaki-bleached);
+    }
+
+    /* —— Right: hero area —— */
+    .hero {
+      position: relative;
+      padding: 40px;
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .hero-bg svg { width: 100%; height: 100%; display: block; }
+
+    .hero-classify {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      color: var(--red-hot);
+      text-transform: uppercase;
+      z-index: 2;
+      position: relative;
+    }
+    .hero-classify .box {
+      padding: 3px 8px;
+      border: 1px solid var(--red-hot);
+      color: var(--red-hot);
+    }
+    .hero-classify .dash {
+      flex: 0 0 40px;
+      height: 1px;
+      background: var(--red-hot);
+      opacity: 0.6;
+    }
+
+    .hero-title-wrap {
+      position: relative;
+      z-index: 2;
+      padding-top: 48px;
+    }
+    .hero-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px;
+      background: rgba(11,14,7,0.6);
+      border: 1px solid var(--amber-dim);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      color: var(--amber);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .hero-title {
+      font-family: var(--font-hero);
+      font-size: clamp(72px, 11vw, 146px);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      color: var(--paper-bleached);
+      text-shadow:
+        0 2px 0 rgba(0,0,0,0.9),
+        0 8px 30px rgba(0,0,0,0.6),
+        0 0 60px rgba(212,164,58,0.1);
+      text-transform: uppercase;
+    }
+    .hero-title .slash {
+      color: var(--amber);
+      text-shadow: 0 0 30px rgba(255,212,106,0.5);
+    }
+    .hero-title .ver {
+      color: var(--red-hot);
+      -webkit-text-stroke: 0;
+    }
+    .hero-sub {
+      margin-top: 12px;
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.5em;
+      color: var(--khaki-bleached);
+      text-transform: uppercase;
+    }
+
+    .hero-byline {
+      margin-top: 30px;
+      max-width: 540px;
+      padding: 16px 20px;
+      background: rgba(11,14,7,0.55);
+      border-left: 3px solid var(--amber);
+      font-family: var(--font-typewriter);
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--paper);
+      position: relative;
+      z-index: 2;
+    }
+    .hero-byline b { color: var(--amber-glow); font-weight: normal; }
+
+    /* —— Hero footer row —— */
+    .hero-foot {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      padding-top: 24px;
+      border-top: 1px solid var(--khaki-dark);
+    }
+    .foot-cell .label-micro { display: block; margin-bottom: 6px; }
+    .foot-cell .value {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--paper-bleached);
+      letter-spacing: 0.1em;
+    }
+    .foot-cell .value.crt { color: var(--green-crt); text-shadow: 0 0 10px rgba(106,250,138,0.5); }
+
+    /* —— Version footer —— */
+    .footer-rail {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      border-top: 1px solid var(--khaki-dark);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--khaki);
+    }
+    .footer-rail b { color: var(--paper); font-weight: 700; }
+    .stamp-wrap {
+      position: absolute;
+      right: 60px;
+      bottom: 90px;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    @media (max-width: 900px) {
+      .cover-page { grid-template-columns: 1fr; }
+      .hero { padding: 22px; min-height: 440px; }
+      .hero-title { font-size: 60px; }
+      .hero-foot { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body class="fo-canvas fo-grain fo-grid">
+
+  <nav class="mockup-nav">
+    <span class="nav-tag">FREEWAR 2.0</span>
+    <a href="index.html">INDEX</a>
+    <a href="cover.html" class="active">COVER</a>
+    <a href="battle.html">BATTLE</a>
+    <a href="shop.html">SHOP</a>
+  </nav>
+
+  <div class="cover-page fade-up">
+
+    <!-- TELEX BAR -->
+    <div class="telex-strip">
+      <span class="telex-badge">● LIVE</span>
+      <span class="telex-dot"></span>
+      <div class="telex" style="flex:1">
+        <div class="telex-track">
+          <span>◇ 每日简报 · DAY 07 : 领取 $200 战地补给</span>
+          <span>◇ 新单位解锁 · 武装直升机 已列入征召名单</span>
+          <span>◇ 成绩榜更新 · le'o 目前全局胜率 68.4%</span>
+          <span>◇ 系统通告 · 前线 AI 调整为 PROTOCOL-B 难度曲线</span>
+          <span>◇ 每日简报 · DAY 07 : 领取 $200 战地补给</span>
+          <span>◇ 新单位解锁 · 武装直升机 已列入征召名单</span>
+          <span>◇ 成绩榜更新 · le'o 目前全局胜率 68.4%</span>
+          <span>◇ 系统通告 · 前线 AI 调整为 PROTOCOL-B 难度曲线</span>
+        </div>
+      </div>
+      <span class="label-mono" style="flex-shrink:0; font-size:10px; color:var(--khaki)">FIELD TELEX · CH 07.42</span>
+    </div>
+
+    <!-- LEFT MENU -->
+    <aside class="frame frame-brackets menu-panel">
+      <span class="bracket-tl"></span><span class="bracket-tr"></span>
+      <span class="bracket-bl"></span><span class="bracket-br"></span>
+      <div class="rivets"><span class="r3"></span><span class="r4"></span></div>
+
+      <header class="menu-heading">
+        <div class="title">指挥台</div>
+        <span class="sub">COMMAND · DOSSIER</span>
+      </header>
+
+      <ul class="menu-list fade-up-stagger">
+        <li class="menu-item primary">
+          <span class="menu-num">01</span>
+          <div>
+            <div class="menu-name">开始战斗</div>
+            <div class="menu-hint">DEPLOY · RECOMMENDED</div>
+          </div>
+          <span class="menu-arrow">►</span>
+        </li>
+        <li class="menu-item">
+          <span class="menu-num">02</span>
+          <div>
+            <div class="menu-name">难度</div>
+            <div class="menu-hint">DIFFICULTY · 9 TIERS</div>
+          </div>
+          <span class="menu-arrow">►</span>
+        </li>
+        <li class="menu-item">
+          <span class="menu-num">03</span>
+          <div>
+            <div class="menu-name">装备商店</div>
+            <div class="menu-hint">ARMORY · 单位 // 建筑</div>
+          </div>
+          <span class="menu-arrow">►</span>
+        </li>
+        <li class="menu-item">
+          <span class="menu-num">04</span>
+          <div>
+            <div class="menu-name">武将团</div>
+            <div class="menu-hint">HEROES · UNLOCK POOL</div>
+          </div>
+          <span class="menu-arrow">►</span>
+        </li>
+        <li class="menu-item">
+          <span class="menu-num">05</span>
+          <div>
+            <div class="menu-name">设置</div>
+            <div class="menu-hint">CONFIG · 音效 / 画质</div>
+          </div>
+          <span class="menu-arrow">►</span>
+        </li>
+        <li class="menu-item">
+          <span class="menu-num">06</span>
+          <div>
+            <div class="menu-name">作战成绩</div>
+            <div class="menu-hint">RECORD · 胜场统计</div>
+          </div>
+          <span class="menu-arrow">►</span>
+        </li>
+        <li class="menu-item">
+          <span class="menu-num">07</span>
+          <div>
+            <div class="menu-name">离开</div>
+            <div class="menu-hint">EXIT · SIGN OFF</div>
+          </div>
+          <span class="menu-arrow">►</span>
+        </li>
+      </ul>
+
+      <div class="menu-footer">
+        <span>总指挥 · le'o</span>
+        <span>CH 07 / 42</span>
+      </div>
+    </aside>
+
+    <!-- HERO -->
+    <section class="frame frame-brackets hero">
+      <span class="bracket-tl"></span><span class="bracket-tr"></span>
+      <span class="bracket-bl"></span><span class="bracket-br"></span>
+      <div class="rivets"><span class="r3"></span><span class="r4"></span></div>
+
+      <!-- Mushroom cloud + skyline background -->
+      <div class="hero-bg">
+        <svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <radialGradient id="flash" cx="0.68" cy="0.45" r="0.38">
+              <stop offset="0%"  stop-color="#ffcc66" stop-opacity="0.85"/>
+              <stop offset="30%" stop-color="#d4a43a" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#d4a43a" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="smoke" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#2a2418"/>
+              <stop offset="1" stop-color="#0a0b05"/>
+            </linearGradient>
+            <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="rgba(180,140,80,0.0)"/>
+              <stop offset="1" stop-color="rgba(120,90,50,0.2)"/>
+            </linearGradient>
+            <filter id="blurSmoke"><feGaussianBlur stdDeviation="2"/></filter>
+          </defs>
+          <!-- Sky gradient -->
+          <rect width="1000" height="600" fill="url(#haze)"/>
+          <!-- Sun/flash -->
+          <rect width="1000" height="600" fill="url(#flash)"/>
+          <!-- Far mountain silhouette -->
+          <path d="M0 450 L80 390 L160 420 L260 370 L360 400 L460 360 L560 410 L680 380 L800 420 L900 390 L1000 420 L1000 600 L0 600 Z"
+                fill="#141810" opacity="0.9"/>
+          <!-- City silhouette -->
+          <g fill="#0a0c07">
+            <rect x="110" y="420" width="40" height="130"/>
+            <rect x="155" y="390" width="28" height="160"/>
+            <rect x="188" y="410" width="34" height="140"/>
+            <rect x="230" y="370" width="20" height="180"/>
+            <polygon points="235,370 240,355 245,370"/>
+            <rect x="260" y="405" width="42" height="145"/>
+            <rect x="310" y="430" width="80" height="120"/>
+            <rect x="400" y="395" width="26" height="155"/>
+            <rect x="430" y="415" width="36" height="135"/>
+            <rect x="475" y="380" width="22" height="170"/>
+            <rect x="505" y="410" width="58" height="140"/>
+            <!-- chimney stacks -->
+            <rect x="580" y="360" width="12" height="190"/>
+            <rect x="600" y="340" width="12" height="210"/>
+            <rect x="628" y="390" width="30" height="160"/>
+          </g>
+          <!-- Mushroom cloud -->
+          <g filter="url(#blurSmoke)">
+            <!-- stem -->
+            <path d="M720 540 L760 540 L770 360 L710 360 Z" fill="url(#smoke)"/>
+            <!-- main cap -->
+            <ellipse cx="740" cy="280" rx="170" ry="110" fill="url(#smoke)"/>
+            <!-- cauliflower bumps -->
+            <ellipse cx="650" cy="260" rx="70" ry="50" fill="#1c2214"/>
+            <ellipse cx="820" cy="270" rx="80" ry="55" fill="#1c2214"/>
+            <ellipse cx="740" cy="220" rx="90" ry="55" fill="#262a1a"/>
+            <ellipse cx="690" cy="200" rx="50" ry="35" fill="#2e3520"/>
+            <ellipse cx="790" cy="210" rx="55" ry="38" fill="#2e3520"/>
+            <!-- rim glow -->
+            <ellipse cx="740" cy="310" rx="150" ry="20" fill="#8a6f25" opacity="0.4"/>
+            <!-- inner highlight -->
+            <ellipse cx="720" cy="240" rx="60" ry="18" fill="#ffcc66" opacity="0.15"/>
+          </g>
+          <!-- horizon glow bar -->
+          <rect x="0" y="420" width="1000" height="3" fill="#d4a43a" opacity="0.25"/>
+          <!-- distant planes -->
+          <g fill="#1a1810" opacity="0.7">
+            <path d="M120 150 l10 -2 l2 2 l-10 2 Z"/>
+            <path d="M180 120 l14 -3 l3 2 l-14 4 Z"/>
+            <path d="M260 180 l10 -2 l2 2 l-10 2 Z"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Classification header -->
+      <div class="hero-classify">
+        <span class="dash"></span>
+        <span class="box">CLASSIFIED</span>
+        <span>FREEWAR // OPERATION DOSSIER</span>
+        <span style="color: var(--khaki); letter-spacing:0.2em;">· 2026-04 · CH 07</span>
+      </div>
+
+      <!-- Title block -->
+      <div class="hero-title-wrap">
+        <div class="hero-kicker">
+          <span style="width:6px; height:6px; background:var(--amber); border-radius:50%; box-shadow:0 0 8px var(--amber-glow)"></span>
+          总设计师 · le'o
+          <span style="color:var(--khaki)">|</span>
+          <span>副指挥 · 家长</span>
+        </div>
+        <h1 class="hero-title">
+          战争
+          <span class="slash">//</span>
+          FREE<span class="ver">WAR</span>
+        </h1>
+        <div class="hero-sub">TACTICAL OPS · 2.0</div>
+
+        <p class="hero-byline">
+          // 一款由小朋友 <b>le'o</b> 亲手设计的即时战略游戏。<br/>
+          双方对攻 · 夺旗定胜负 · 不直接操控战斗单元。<br/>
+          <span style="color: var(--khaki)">输入金币，部署部队，建造金矿 —— 谁先把对方旗打下来，谁就赢。</span>
+        </p>
+      </div>
+
+      <!-- Stamp -->
+      <div class="stamp-wrap">
+        <span class="stamp">FOR le'o</span>
+      </div>
+
+      <!-- Footer metrics -->
+      <div class="hero-foot">
+        <div class="foot-cell">
+          <span class="label-micro">BUILD</span>
+          <div class="value">2.0.0-RC</div>
+        </div>
+        <div class="foot-cell">
+          <span class="label-micro">UNITS</span>
+          <div class="value crt">12 ✦</div>
+        </div>
+        <div class="foot-cell">
+          <span class="label-micro">CAMPAIGNS</span>
+          <div class="value">09 CH</div>
+        </div>
+        <div class="foot-cell">
+          <span class="label-micro">STATUS</span>
+          <div class="value" style="color:var(--amber)">READY</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer-rail">
+      <span><b>FREEWAR</b> · 战术作战系统 · 未经授权不得外传</span>
+      <span>© <b>le'o</b> studios · ops-ch-07 · build 2.0.0-rc1</span>
+    </footer>
+
+  </div>
+
+</body>
+</html>

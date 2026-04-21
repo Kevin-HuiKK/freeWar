@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>freeWar 2.0 · 设计图纸索引</title>
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    .hub {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 8px;
+    }
+    .hub-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 20px 24px 28px;
+      border-bottom: 1px solid var(--khaki-dark);
+      margin-bottom: 36px;
+      position: relative;
+    }
+    .hub-header::before {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: -1px; height: 1px;
+      background: repeating-linear-gradient(90deg, var(--amber-dim) 0 8px, transparent 8px 14px);
+    }
+    .hub-title {
+      font-size: 54px;
+      line-height: 0.95;
+      color: var(--paper-bleached);
+      text-shadow: 0 2px 0 rgba(0,0,0,0.6), 0 0 30px rgba(212,164,58,0.15);
+    }
+    .hub-title .sub {
+      display: block;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: 0.4em;
+      color: var(--amber);
+      margin-top: 14px;
+      text-shadow: none;
+    }
+    .hub-meta {
+      text-align: right;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--khaki);
+      line-height: 1.8;
+    }
+    .hub-meta b {
+      color: var(--paper);
+      font-weight: 700;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 28px;
+    }
+    .dossier {
+      position: relative;
+      background: linear-gradient(180deg, var(--olive-deep) 0%, #0e1208 100%);
+      border: 1px solid var(--khaki-dark);
+      border-radius: 3px;
+      padding: 0;
+      overflow: hidden;
+      transition: transform 0.2s ease, border-color 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      display: block;
+    }
+    .dossier:hover {
+      transform: translateY(-4px) rotate(-0.5deg);
+      border-color: var(--amber);
+      box-shadow: 0 14px 40px rgba(0,0,0,0.6), 0 0 30px rgba(212,164,58,0.12);
+    }
+    .dossier-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: linear-gradient(180deg, var(--metal-dark), var(--rivet));
+      border-bottom: 1px solid var(--khaki-dark);
+    }
+    .dossier-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: var(--amber);
+      padding: 3px 7px;
+      background: rgba(212,164,58,0.12);
+      border: 1px solid var(--amber-dim);
+      border-radius: 2px;
+    }
+    .dossier-name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--khaki-bleached);
+    }
+    .dossier-thumb {
+      aspect-ratio: 16 / 10;
+      background: #14180d;
+      position: relative;
+      overflow: hidden;
+    }
+    .dossier-thumb svg { width: 100%; height: 100%; display: block; }
+    .dossier-body {
+      padding: 20px 20px 22px;
+    }
+    .dossier-title {
+      font-family: var(--font-hero);
+      font-size: 28px;
+      letter-spacing: 0.05em;
+      color: var(--paper-bleached);
+      text-shadow: 0 1px 0 #000;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .dossier-desc {
+      font-family: var(--font-typewriter);
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--khaki-bleached);
+      margin-bottom: 14px;
+    }
+    .dossier-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .note-rail {
+      margin-top: 40px;
+      padding: 18px 22px;
+      background: repeating-linear-gradient(90deg, transparent 0 10px, rgba(212,164,58,0.04) 10px 20px);
+      border: 1px dashed var(--khaki-dark);
+      border-radius: 2px;
+      font-family: var(--font-typewriter);
+      font-size: 13px;
+      color: var(--khaki-bleached);
+      line-height: 1.7;
+    }
+    .note-rail b { color: var(--amber); font-weight: normal; }
+  </style>
+</head>
+<body class="fo-canvas fo-grain fo-grid">
+
+  <nav class="mockup-nav">
+    <span class="nav-tag">FREEWAR 2.0</span>
+    <a href="index.html" class="active">INDEX</a>
+    <a href="cover.html">COVER</a>
+    <a href="battle.html">BATTLE</a>
+    <a href="shop.html">SHOP</a>
+  </nav>
+
+  <main class="hub fade-up">
+    <header class="hub-header">
+      <div>
+        <h1 class="stencil hub-title">
+          设计图纸
+          <span class="sub">FREEWAR 2.0 · BLUEPRINT SET</span>
+        </h1>
+      </div>
+      <div class="hub-meta">
+        <div><span class="label-micro">DOC · LEVEL</span> <b>CLASSIFIED</b></div>
+        <div><span class="label-micro">ISSUED TO</span> <b>le'o · 总设计师</b></div>
+        <div><span class="label-micro">REVISION</span> <b>v2.0 · REV 00</b></div>
+        <div><span class="label-micro">COUNT</span> <b>03 / 03 MOCKUPS</b></div>
+      </div>
+    </header>
+
+    <section class="cards fade-up-stagger">
+
+      <!-- ===== Cover card ===== -->
+      <a class="dossier" href="cover.html">
+        <div class="dossier-label">
+          <span class="dossier-num">01</span>
+          <span class="dossier-name">COVER / 主菜单</span>
+        </div>
+        <div class="dossier-thumb">
+          <!-- Thumbnail: abstract cover preview -->
+          <svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="t1sky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#3a3820"/><stop offset="1" stop-color="#0f1108"/>
+              </linearGradient>
+              <radialGradient id="t1flash" cx="0.7" cy="0.55" r="0.35">
+                <stop offset="0" stop-color="#f2c66a" stop-opacity=".75"/>
+                <stop offset="1" stop-color="#f2c66a" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <rect width="400" height="250" fill="url(#t1sky)"/>
+            <rect width="400" height="250" fill="url(#t1flash)"/>
+            <!-- mushroom cloud silhouette -->
+            <g fill="#1b2010" opacity="0.85">
+              <ellipse cx="280" cy="120" rx="58" ry="36"/>
+              <ellipse cx="290" cy="100" rx="46" ry="30"/>
+              <rect x="270" y="140" width="20" height="60"/>
+              <rect x="250" y="195" width="60" height="12"/>
+            </g>
+            <!-- city silhouette -->
+            <g fill="#0b0e05">
+              <rect x="180" y="180" width="18" height="50"/>
+              <rect x="200" y="160" width="22" height="70"/>
+              <rect x="224" y="170" width="16" height="60"/>
+              <rect x="242" y="150" width="26" height="80"/>
+              <rect x="270" y="200" width="50" height="30"/>
+              <rect x="322" y="180" width="22" height="50"/>
+              <rect x="346" y="195" width="40" height="35"/>
+            </g>
+            <!-- menu column -->
+            <g font-family="JetBrains Mono,monospace" font-size="10" fill="#d4a43a">
+              <rect x="20" y="60" width="120" height="16" fill="#2a2a1a" stroke="#d4a43a" stroke-width="1"/>
+              <text x="28" y="72">01 / 开始战斗</text>
+              <rect x="20" y="82" width="120" height="16" fill="#1a1a10" stroke="#5d5235"/>
+              <text x="28" y="94" fill="#b6a87c">02 / 难度</text>
+              <rect x="20" y="104" width="120" height="16" fill="#1a1a10" stroke="#5d5235"/>
+              <text x="28" y="116" fill="#b6a87c">03 / 装备商店</text>
+              <rect x="20" y="126" width="120" height="16" fill="#1a1a10" stroke="#5d5235"/>
+              <text x="28" y="138" fill="#b6a87c">04 / 武将团</text>
+              <rect x="20" y="148" width="120" height="16" fill="#1a1a10" stroke="#5d5235"/>
+              <text x="28" y="160" fill="#b6a87c">05 / 设置</text>
+            </g>
+            <!-- title -->
+            <text x="20" y="36" font-family="Black Ops One,Impact" font-size="24" fill="#f3ead0" letter-spacing="0.02em">战争 · FREEWAR</text>
+          </svg>
+        </div>
+        <div class="dossier-body">
+          <h2 class="dossier-title">Cover</h2>
+          <p class="dossier-desc">
+            // 总入口 · 蘑菇云远景 + 编号菜单 + 每日简报 telex 条
+          </p>
+          <div class="dossier-chips">
+            <span class="tag">7 MENU ITEMS</span>
+            <span class="tag tag--crt">DAILY TELEX</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- ===== Battle card ===== -->
+      <a class="dossier" href="battle.html">
+        <div class="dossier-label">
+          <span class="dossier-num">02</span>
+          <span class="dossier-name">BATTLE / 战斗界面</span>
+        </div>
+        <div class="dossier-thumb">
+          <svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="250" fill="#14180d"/>
+            <!-- HUD strip -->
+            <rect x="0" y="0" width="400" height="22" fill="#2a301d" stroke="#5d5235"/>
+            <circle cx="12" cy="11" r="3" fill="#d4a43a"/>
+            <text x="24" y="15" font-family="JetBrains Mono,monospace" font-size="9" fill="#f3ead0">$340</text>
+            <text x="70" y="15" font-family="JetBrains Mono,monospace" font-size="9" fill="#e14a3a">♥ 18/20</text>
+            <text x="140" y="15" font-family="JetBrains Mono,monospace" font-size="9" fill="#4a8ac7">⚑ 14/20</text>
+            <text x="210" y="15" font-family="JetBrains Mono,monospace" font-size="9" fill="#b6a87c">02:47</text>
+            <!-- Left menu strip -->
+            <rect x="0" y="22" width="60" height="228" fill="#1a1f12" stroke="#3f4f2a"/>
+            <g>
+              <rect x="6" y="30" width="48" height="30" fill="#2a2820" stroke="#5d5235"/>
+              <rect x="6" y="64" width="48" height="30" fill="#2a2820" stroke="#5d5235"/>
+              <rect x="6" y="98" width="48" height="30" fill="#2a2820" stroke="#d4a43a"/>
+              <rect x="6" y="132" width="48" height="30" fill="#2a2820" stroke="#5d5235"/>
+              <rect x="6" y="166" width="48" height="30" fill="#2a2820" stroke="#5d5235"/>
+            </g>
+            <!-- Right menu strip -->
+            <rect x="340" y="22" width="60" height="228" fill="#1a1f12" stroke="#3f4f2a"/>
+            <g>
+              <rect x="346" y="30" width="48" height="30" fill="#2a2820" stroke="#5d5235"/>
+              <rect x="346" y="64" width="48" height="30" fill="#2a2820" stroke="#5d5235"/>
+              <rect x="346" y="98" width="48" height="30" fill="#2a2820" stroke="#5d5235"/>
+              <rect x="346" y="132" width="48" height="30" fill="#2a2820" stroke="#5d5235"/>
+            </g>
+            <!-- battlefield -->
+            <rect x="60" y="22" width="280" height="228" fill="#3d5526"/>
+            <!-- dirt lanes -->
+            <rect x="60" y="60" width="280" height="26" fill="#6b4f30" opacity="0.6"/>
+            <rect x="60" y="170" width="280" height="26" fill="#6b4f30" opacity="0.6"/>
+            <!-- flags -->
+            <g>
+              <rect x="68" y="120" width="2" height="22" fill="#b8b8b8"/>
+              <polygon points="70,120 86,126 70,132" fill="#4a8ac7"/>
+            </g>
+            <g>
+              <rect x="330" y="120" width="2" height="22" fill="#b8b8b8"/>
+              <polygon points="330,120 314,126 330,132" fill="#e14a3a"/>
+            </g>
+            <!-- obstacles -->
+            <g stroke="#8a8a60" stroke-width="1" fill="none">
+              <path d="M160 100 Q163 96 166 100 Q169 104 172 100 Q175 96 178 100 Q181 104 184 100"/>
+              <path d="M200 150 Q203 146 206 150 Q209 154 212 150 Q215 146 218 150 Q221 154 224 150"/>
+              <path d="M240 80 Q243 76 246 80 Q249 84 252 80 Q255 76 258 80 Q261 84 264 80"/>
+            </g>
+            <!-- units (simplified) -->
+            <g>
+              <circle cx="120" cy="75" r="5" fill="#4a8ac7"/>
+              <circle cx="140" cy="75" r="5" fill="#4a8ac7"/>
+              <circle cx="120" cy="185" r="5" fill="#4a8ac7"/>
+              <circle cx="280" cy="75" r="5" fill="#e14a3a"/>
+              <circle cx="260" cy="185" r="5" fill="#e14a3a"/>
+              <rect x="100" y="115" width="10" height="10" fill="#3a4d24"/>
+              <rect x="290" y="155" width="10" height="10" fill="#7a2020"/>
+            </g>
+            <!-- crosshair -->
+            <g stroke="#d4a43a" stroke-width="1" opacity="0.7">
+              <path d="M200 135 l-8 0 M200 135 l8 0 M200 135 l0 -8 M200 135 l0 8"/>
+            </g>
+          </svg>
+        </div>
+        <div class="dossier-body">
+          <h2 class="dossier-title">Battle</h2>
+          <p class="dossier-desc">
+            // 战场指挥台 · 双旗对攻 · 障碍物 · 两侧部署面板
+          </p>
+          <div class="dossier-chips">
+            <span class="tag tag--blue">我方 ⚑</span>
+            <span class="tag tag--red">敌方 ⚑</span>
+            <span class="tag">LIVE HUD</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- ===== Shop card ===== -->
+      <a class="dossier" href="shop.html">
+        <div class="dossier-label">
+          <span class="dossier-num">03</span>
+          <span class="dossier-name">SHOP / 装备商店</span>
+        </div>
+        <div class="dossier-thumb">
+          <svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="250" fill="#14180d"/>
+            <!-- tabs -->
+            <rect x="0" y="0" width="400" height="28" fill="#1a1f12" stroke="#5d5235"/>
+            <rect x="10" y="4" width="90" height="24" fill="#3f4f2a" stroke="#d4a43a"/>
+            <text x="28" y="21" font-family="Black Ops One,Impact" font-size="12" fill="#d4a43a">单位 // UNITS</text>
+            <rect x="106" y="4" width="90" height="24" fill="#1a1f12" stroke="#5d5235"/>
+            <text x="118" y="21" font-family="Black Ops One,Impact" font-size="12" fill="#b6a87c">建筑</text>
+            <!-- cards -->
+            <g>
+              <rect x="12" y="42" width="88" height="96" fill="#1e2414" stroke="#5d5235"/>
+              <rect x="22" y="52" width="68" height="48" fill="#2a3a18"/>
+              <text x="22" y="114" font-family="Black Ops One,Impact" font-size="10" fill="#f3ead0">民兵</text>
+              <text x="22" y="128" font-family="JetBrains Mono,monospace" font-size="9" fill="#d4a43a">$10</text>
+
+              <rect x="108" y="42" width="88" height="96" fill="#1e2414" stroke="#5d5235"/>
+              <rect x="118" y="52" width="68" height="48" fill="#2a3a18"/>
+              <text x="118" y="114" font-family="Black Ops One,Impact" font-size="10" fill="#f3ead0">步枪兵</text>
+              <text x="118" y="128" font-family="JetBrains Mono,monospace" font-size="9" fill="#d4a43a">$25</text>
+
+              <rect x="204" y="42" width="88" height="96" fill="#1e2414" stroke="#d4a43a"/>
+              <rect x="214" y="52" width="68" height="48" fill="#3a4d24"/>
+              <text x="214" y="114" font-family="Black Ops One,Impact" font-size="10" fill="#ffd46a">装甲车</text>
+              <text x="214" y="128" font-family="JetBrains Mono,monospace" font-size="9" fill="#ffd46a">$120</text>
+
+              <rect x="300" y="42" width="88" height="96" fill="#1e2414" stroke="#5d5235"/>
+              <rect x="310" y="52" width="68" height="48" fill="#2a3a18"/>
+              <text x="310" y="114" font-family="Black Ops One,Impact" font-size="10" fill="#f3ead0">坦克</text>
+              <text x="310" y="128" font-family="JetBrains Mono,monospace" font-size="9" fill="#d4a43a">$220</text>
+
+              <rect x="12" y="144" width="88" height="96" fill="#1e2414" stroke="#5d5235"/>
+              <rect x="108" y="144" width="88" height="96" fill="#1e2414" stroke="#5d5235"/>
+              <rect x="204" y="144" width="88" height="96" fill="#1e2414" stroke="#5d5235"/>
+              <rect x="300" y="144" width="88" height="96" fill="#1e2414" stroke="#5d5235"/>
+            </g>
+          </svg>
+        </div>
+        <div class="dossier-body">
+          <h2 class="dossier-title">Shop</h2>
+          <p class="dossier-desc">
+            // 装备目录 · 单位 / 建筑双 Tab · 卡片化数值清单
+          </p>
+          <div class="dossier-chips">
+            <span class="tag">2 TABS</span>
+            <span class="tag">8+ ITEMS</span>
+          </div>
+        </div>
+      </a>
+
+    </section>
+
+    <div class="note-rail">
+      <b>操作指南</b> ·
+      点击任一图纸卡片进入原型；每页右上角有导航条可在 <b>COVER / BATTLE / SHOP</b> 之间切换；
+      本批图纸<b>不影响线上 v1 版本</b>（`https://kevin-huikk.github.io/freeWar/`），纯视觉稿供 le'o 和家长拍板。
+    </div>
+  </main>
+
+</body>
+</html>

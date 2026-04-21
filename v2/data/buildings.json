@@ -1,0 +1,46 @@
+{
+  "turret": {
+    "name": "机枪位",
+    "cost": 70,
+    "hp": 160,
+    "damage": 12,
+    "range": 170,
+    "fireRate": 1.8,
+    "size": 36,
+    "color": "#3d4a2a",
+    "barrelColor": "#1a1a1a",
+    "role": "静止 · 自动开火"
+  },
+  "cannon": {
+    "name": "固定炮台",
+    "cost": 160,
+    "hp": 220,
+    "damage": 34,
+    "range": 220,
+    "fireRate": 0.7,
+    "size": 42,
+    "color": "#4a3a1e",
+    "barrelColor": "#1a1a1a",
+    "aoeRadius": 32,
+    "role": "重炮 · 爆炸"
+  },
+  "goldmine": {
+    "name": "金矿",
+    "cost": 90,
+    "hp": 100,
+    "income": 6,
+    "interval": 3,
+    "size": 40,
+    "color": "#5a3a1e",
+    "role": "每 3 秒 +$6"
+  },
+  "sandbag": {
+    "name": "沙袋",
+    "cost": 20,
+    "hp": 120,
+    "blocks": true,
+    "size": 34,
+    "color": "#a08550",
+    "role": "阻挡路径"
+  }
+}

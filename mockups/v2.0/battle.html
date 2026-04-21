@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>freeWar 2.0 · Battle</title>
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    .battle {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 200px 1fr 200px;
+      grid-template-rows: auto 1fr auto;
+      gap: 14px;
+      min-height: calc(100vh - 64px);
+    }
+
+    /* —— HUD strip —— */
+    .hud {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: stretch;
+      gap: 1px;
+      background: var(--rivet);
+      border: 1px solid var(--khaki-dark);
+      border-radius: 2px;
+      padding: 0;
+      overflow: hidden;
+      height: 64px;
+    }
+    .hud-cell {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 8px 14px;
+      background: linear-gradient(180deg, var(--metal-dark) 0%, #1a1813 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .hud-cell:hover { background: linear-gradient(180deg, #322e22 0%, #1a1813 100%); }
+    .hud-cell .label-micro { font-size: 9px; }
+    .hud-cell .val {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: 0.05em;
+      color: var(--paper-bleached);
+      line-height: 1;
+    }
+    .hud-cell.gold .val { color: var(--amber-glow); text-shadow: 0 0 10px rgba(255,212,106,0.5); }
+    .hud-cell.ally .val { color: var(--blue-ally); text-shadow: 0 0 10px rgba(74,138,199,0.5); }
+    .hud-cell.enemy .val { color: var(--red-hot); text-shadow: 0 0 10px rgba(225,74,58,0.5); }
+    .hud-cell.timer .val { color: var(--green-crt); font-family: var(--font-mono); text-shadow: 0 0 10px rgba(106,250,138,0.5); }
+
+    .hp-bar {
+      margin-top: 4px;
+      height: 6px;
+      background: #0a0c06;
+      border: 1px solid #2a2820;
+      border-radius: 1px;
+      overflow: hidden;
+      position: relative;
+    }
+    .hp-bar-fill { height: 100%; }
+    .hp-bar-fill.ally { background: linear-gradient(90deg, var(--blue-ally), #8ebfe4); }
+    .hp-bar-fill.enemy { background: linear-gradient(90deg, var(--red-alert), var(--red-hot)); }
+    .hp-bar-fill.gold { background: linear-gradient(90deg, var(--amber-dim), var(--amber-glow)); }
+
+    .hud-icon-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hud-icon {
+      width: 28px; height: 28px;
+      border-radius: 1px;
+      display: grid; place-items: center;
+      font-size: 18px;
+    }
+
+    .hud-mute {
+      flex: 0 0 64px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      background: linear-gradient(180deg, var(--metal), var(--metal-dark));
+      cursor: pointer;
+      transition: all 0.14s;
+    }
+    .hud-mute:hover { color: var(--amber); box-shadow: inset 0 0 0 1px var(--amber); }
+
+    /* —— Panels —— */
+    .panel {
+      display: flex;
+      flex-direction: column;
+      padding: 14px 12px;
+      gap: 8px;
+      position: relative;
+    }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 4px 10px;
+      border-bottom: 1px dashed var(--khaki-dark);
+      margin-bottom: 4px;
+    }
+    .panel-head .title {
+      font-family: var(--font-hero);
+      font-size: 16px;
+      color: var(--paper-bleached);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .panel-head .count {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--amber);
+      letter-spacing: 0.2em;
+    }
+    .panel-sub {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      color: var(--khaki);
+      text-transform: uppercase;
+      padding: 0 4px;
+      margin-bottom: 6px;
+    }
+
+    /* —— Unit / building card (mini) —— */
+    .mini-card {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 8px;
+      align-items: center;
+      padding: 6px 8px;
+      background: linear-gradient(180deg, var(--metal-dark), #16160f);
+      border: 1px solid var(--khaki-dark);
+      border-left: 3px solid var(--khaki-dark);
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.14s ease;
+      position: relative;
+    }
+    .mini-card:hover:not(.locked) {
+      border-color: var(--amber-dim);
+      border-left-color: var(--amber);
+      transform: translateX(2px);
+    }
+    .mini-card.selected {
+      border-color: var(--amber);
+      border-left-color: var(--amber-glow);
+      background: linear-gradient(180deg, #2e2a18, var(--metal-dark));
+      box-shadow: 0 0 0 1px var(--amber-dim), var(--shadow-glow-amber);
+    }
+    .mini-card.locked { opacity: 0.4; cursor: not-allowed; filter: saturate(0.5); }
+
+    .mc-icon {
+      width: 44px; height: 44px;
+      background: radial-gradient(circle at 30% 30%, #3a4626, #111408);
+      border: 1px solid var(--khaki-dark);
+      border-radius: 2px;
+      display: grid; place-items: center;
+      overflow: hidden;
+    }
+    .mc-icon svg { width: 40px; height: 40px; display: block; }
+    .mc-meta { display: flex; flex-direction: column; gap: 1px; }
+    .mc-name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      color: var(--paper-bleached);
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+    .mc-cost {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--amber);
+    }
+    .mc-role {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      color: var(--khaki);
+      text-transform: uppercase;
+    }
+    .mc-cooldown {
+      position: absolute;
+      top: 4px; right: 4px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--red-hot);
+      background: rgba(0,0,0,0.7);
+      padding: 1px 4px;
+      border-radius: 1px;
+    }
+
+    /* —— Battlefield viewport (scrollable — canvas larger than viewport) —— */
+    .field-wrap {
+      position: relative;
+      padding: 10px;
+      background: linear-gradient(180deg, var(--rivet), #0b0e07);
+    }
+    .field {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 7;
+      border: 2px solid #1a1e0f;
+      box-shadow: inset 0 0 0 1px var(--metal-light), inset 0 0 60px rgba(0,0,0,0.6), 0 0 30px rgba(0,0,0,0.4);
+      overflow: auto;
+      background: #1a1916;
+      /* Dark-themed scrollbars */
+      scrollbar-color: var(--amber-dim) var(--rivet);
+      scrollbar-width: thin;
+    }
+    .field::-webkit-scrollbar { width: 10px; height: 10px; background: var(--rivet); }
+    .field::-webkit-scrollbar-track { background: #0d0e0a; border: 1px solid #1a1a18; }
+    .field::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--khaki-dark), var(--olive-mid));
+      border: 1px solid #1a1a18;
+      border-radius: 2px;
+    }
+    .field::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, var(--amber-dim), var(--khaki-dark)); }
+    .field-canvas {
+      width: 2400px;
+      height: 900px;
+      position: relative;
+      display: block;
+    }
+    .field-canvas svg { width: 100%; height: 100%; display: block; }
+
+    /* Corner monitor labels pinned to the outer wrap (don't scroll) */
+    .field-corner {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      color: var(--green-crt);
+      padding: 3px 8px;
+      background: rgba(11,14,7,0.85);
+      border: 1px solid rgba(106,250,138,0.3);
+      text-shadow: 0 0 6px rgba(106,250,138,0.6);
+      pointer-events: none;
+      z-index: 3;
+    }
+    .field-corner.tl { top: 18px; left: 18px; }
+    .field-corner.tr { top: 18px; right: 18px; }
+    .field-corner.bl { bottom: 18px; left: 18px; }
+
+    /* —— Mini-map (radar overview) pinned to bottom-right —— */
+    .minimap {
+      position: absolute;
+      bottom: 18px;
+      right: 18px;
+      pointer-events: auto;
+      background: rgba(11,14,7,0.92);
+      border: 1px solid var(--amber-dim);
+      padding: 6px 6px 4px;
+      box-shadow: 0 0 14px rgba(212,164,58,0.2);
+      z-index: 4;
+    }
+    .minimap-head {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 8px;
+      letter-spacing: 0.25em;
+      color: var(--amber);
+      text-transform: uppercase;
+      padding: 0 2px 4px;
+      border-bottom: 1px dashed rgba(212,164,58,0.3);
+      margin-bottom: 4px;
+    }
+    .minimap svg {
+      display: block;
+      width: 240px;
+      height: 90px;
+      cursor: crosshair;
+    }
+    .minimap-viewport {
+      fill: rgba(212,164,58,0.18);
+      stroke: var(--amber);
+      stroke-width: 1.5;
+      pointer-events: none;
+    }
+
+    .status-strip {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 10px 16px;
+      background: linear-gradient(180deg, var(--metal-dark), #141108);
+      border: 1px solid var(--khaki-dark);
+      border-radius: 2px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--khaki-bleached);
+      flex-wrap: wrap;
+    }
+    .status-strip .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-strip .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+    }
+    .status-strip .dot.ok { background: var(--green-crt); box-shadow: 0 0 6px var(--green-crt); }
+    .status-strip .dot.warn { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+    .status-strip .dot.err { background: var(--red-hot); box-shadow: 0 0 6px var(--red-hot); animation: blink 1s infinite; }
+    @keyframes blink { 50% { opacity: 0.3; } }
+
+    @media (max-width: 1100px) {
+      .battle { grid-template-columns: 1fr; }
+      .hud { flex-wrap: wrap; height: auto; }
+      .panel { padding: 12px; }
+    }
+  </style>
+</head>
+<body class="fo-canvas fo-grain">
+
+  <nav class="mockup-nav">
+    <span class="nav-tag">FREEWAR 2.0</span>
+    <a href="index.html">INDEX</a>
+    <a href="cover.html">COVER</a>
+    <a href="battle.html" class="active">BATTLE</a>
+    <a href="shop.html">SHOP</a>
+  </nav>
+
+  <div class="battle fade-up">
+
+    <!-- ========= HUD ========= -->
+    <div class="hud">
+      <div class="hud-cell gold">
+        <div class="hud-icon-box">
+          <span class="hud-icon">💰</span>
+          <div style="flex:1">
+            <div class="label-micro">金币 · CREDITS</div>
+            <div class="val">340</div>
+          </div>
+        </div>
+      </div>
+      <div class="hud-cell ally">
+        <div class="hud-icon-box">
+          <span class="hud-icon">⚑</span>
+          <div style="flex:1">
+            <div class="label-micro">我方旗 · ALLY FLAG</div>
+            <div class="val">18 / 20</div>
+            <div class="hp-bar"><div class="hp-bar-fill ally" style="width: 90%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="hud-cell enemy">
+        <div class="hud-icon-box">
+          <span class="hud-icon">⚑</span>
+          <div style="flex:1">
+            <div class="label-micro">敌方旗 · HOSTILE FLAG</div>
+            <div class="val">14 / 20</div>
+            <div class="hp-bar"><div class="hp-bar-fill enemy" style="width: 70%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="hud-cell timer">
+        <div class="hud-icon-box">
+          <span class="hud-icon">⏱</span>
+          <div style="flex:1">
+            <div class="label-micro">战斗时长 · MISSION T+</div>
+            <div class="val">02 : 47</div>
+          </div>
+        </div>
+      </div>
+      <div class="hud-cell">
+        <div class="hud-icon-box">
+          <span class="hud-icon">⚙</span>
+          <div style="flex:1">
+            <div class="label-micro">难度 · PROTOCOL</div>
+            <div class="val" style="font-size:15px; color: var(--paper);">中等 · B</div>
+          </div>
+        </div>
+      </div>
+      <div class="hud-mute" title="静音切换">🔊</div>
+    </div>
+
+    <!-- ========= LEFT: UNITS ========= -->
+    <aside class="frame frame-brackets panel">
+      <span class="bracket-tl"></span><span class="bracket-tr"></span>
+      <span class="bracket-bl"></span><span class="bracket-br"></span>
+
+      <header class="panel-head">
+        <span class="title">单位</span>
+        <span class="count">06</span>
+      </header>
+      <div class="panel-sub">UNITS · 攻击兵 ▸ 自动推进</div>
+
+      <div class="mini-card">
+        <div class="mc-icon">
+          <svg viewBox="0 0 40 40"><circle cx="20" cy="13" r="5" fill="#c4a175"/><rect x="14" y="18" width="12" height="10" fill="#5d3a1e"/><rect x="24" y="20" width="12" height="1.5" fill="#2a2a2a"/></svg>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-name">民兵</div>
+          <div class="mc-role">MILITIA · 便宜快出</div>
+          <div class="mc-cost">$ 10</div>
+        </div>
+      </div>
+
+      <div class="mini-card selected">
+        <div class="mc-icon">
+          <svg viewBox="0 0 40 40"><circle cx="20" cy="12" r="5" fill="#c49c74"/><path d="M14 16 Q14 11 20 11 Q26 11 26 16 L26 18 L14 18 Z" fill="#3a4a22"/><rect x="14" y="18" width="12" height="10" fill="#3e4d28"/><rect x="22" y="20" width="14" height="1.6" fill="#1a1a1a"/></svg>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-name">步枪兵</div>
+          <div class="mc-role">RIFLEMAN · 均衡</div>
+          <div class="mc-cost">$ 25</div>
+        </div>
+        <span class="tag" style="position:absolute; top:4px; right:6px;">已选</span>
+      </div>
+
+      <div class="mini-card">
+        <div class="mc-icon">
+          <svg viewBox="0 0 40 40"><circle cx="20" cy="12" r="5" fill="#c4a175"/><rect x="14" y="17" width="12" height="11" fill="#6b4423"/><rect x="22" y="18" width="12" height="3" fill="#1a1a1a"/></svg>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-name">冲锋枪兵</div>
+          <div class="mc-role">SMG · 近战高射速</div>
+          <div class="mc-cost">$ 40</div>
+        </div>
+      </div>
+
+      <div class="mini-card">
+        <div class="mc-icon">
+          <svg viewBox="0 0 40 40"><rect x="6" y="10" width="28" height="20" rx="1" fill="#3d4a2a"/><circle cx="20" cy="20" r="5" fill="#2a3418"/><rect x="22" y="19" width="14" height="2" fill="#1a1a1a"/></svg>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-name">装甲车</div>
+          <div class="mc-role">APC · 中防御</div>
+          <div class="mc-cost">$ 120</div>
+        </div>
+      </div>
+
+      <div class="mini-card locked">
+        <div class="mc-icon">
+          <svg viewBox="0 0 40 40"><rect x="4" y="8" width="32" height="24" rx="2" fill="#3d4a2a"/><circle cx="20" cy="20" r="7" fill="#2a3418"/><rect x="24" y="18" width="18" height="2.5" fill="#1a1a1a"/></svg>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-name">坦克</div>
+          <div class="mc-role">TANK · 高抗高伤</div>
+          <div class="mc-cost">$ 220</div>
+        </div>
+        <span class="mc-cooldown">🔒 $ 不足</span>
+      </div>
+
+      <div class="mini-card locked">
+        <div class="mc-icon">
+          <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="7" fill="#2a3418"/><rect x="6" y="18" width="28" height="4" fill="#3d4a2a"/><rect x="18" y="6" width="4" height="6" fill="#1a1a1a"/></svg>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-name">武装直升机</div>
+          <div class="mc-role">HELI · 飞行 / 无视障碍</div>
+          <div class="mc-cost">$ 380</div>
+        </div>
+        <span class="mc-cooldown">🔒 $ 不足</span>
+      </div>
+    </aside>
+
+    <!-- ========= CENTER: BATTLEFIELD ========= -->
+    <section class="frame frame-brackets field-wrap">
+      <span class="bracket-tl"></span><span class="bracket-tr"></span>
+      <span class="bracket-bl"></span><span class="bracket-br"></span>
+
+      <!-- Overlays pinned to .field-wrap (don't scroll with canvas) -->
+      <span class="field-corner tl">◄ REC · CITY-07 · 工业废墟</span>
+      <span class="field-corner tr">▶ LIVE · ZOOM 1.0×</span>
+      <span class="field-corner bl">GRID · SECTOR B-12 · 12.4 km²</span>
+
+      <!-- Mini-map radar (click to jump scroll) -->
+      <div class="minimap">
+        <div class="minimap-head">
+          <span>◎ 战场雷达</span>
+          <span>2400 × 900</span>
+        </div>
+        <svg viewBox="0 0 240 90" xmlns="http://www.w3.org/2000/svg" id="minimap-svg">
+          <!-- base -->
+          <rect width="240" height="90" fill="#1a1a18"/>
+          <!-- zone shading -->
+          <rect x="0" y="0" width="38" height="90" fill="#1a2838" opacity="0.5"/>
+          <rect x="202" y="0" width="38" height="90" fill="#381a1a" opacity="0.5"/>
+          <!-- rubble / buildings (compressed) -->
+          <g fill="#3a3830">
+            <rect x="62" y="32" width="16" height="20"/>
+            <rect x="100" y="18" width="22" height="30"/>
+            <rect x="108" y="54" width="26" height="22"/>
+            <rect x="140" y="36" width="14" height="14"/>
+            <rect x="162" y="22" width="18" height="28"/>
+            <rect x="170" y="58" width="22" height="18"/>
+            <rect x="50" y="68" width="18" height="14"/>
+          </g>
+          <!-- path dashed line (zigzag) -->
+          <polyline fill="none" stroke="#d4a43a" stroke-width="1.2" stroke-dasharray="3 3"
+            points="22,45 62,45 72,28 104,28 114,58 154,58 164,32 204,32 220,45"/>
+          <!-- flags -->
+          <circle cx="22" cy="45" r="4" fill="#4a8ac7"/>
+          <circle cx="220" cy="45" r="4" fill="#e14a3a"/>
+          <!-- ally/enemy dots -->
+          <circle cx="70" cy="45" r="1.5" fill="#4a8ac7"/>
+          <circle cx="90" cy="45" r="1.5" fill="#4a8ac7"/>
+          <circle cx="130" cy="58" r="1.5" fill="#4a8ac7"/>
+          <circle cx="170" cy="30" r="1.5" fill="#e14a3a"/>
+          <circle cx="195" cy="40" r="1.5" fill="#e14a3a"/>
+          <!-- viewport rect (moves with scroll) -->
+          <rect class="minimap-viewport" id="minimap-viewport" x="0" y="0" width="80" height="90"/>
+        </svg>
+      </div>
+
+      <div class="field scanlines" id="field">
+        <div class="field-canvas">
+        <svg viewBox="0 0 2400 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <defs>
+            <!-- CONCRETE / asphalt-cracked base -->
+            <pattern id="concrete" width="96" height="96" patternUnits="userSpaceOnUse">
+              <rect width="96" height="96" fill="#38342e"/>
+              <rect x="0" y="0" width="96" height="96" fill="#2f2b26" opacity="0.5"/>
+              <polygon points="0,0 48,0 42,14 0,20" fill="#3e3a32" opacity="0.6"/>
+              <polygon points="96,0 96,32 68,28 74,0" fill="#42382e" opacity="0.5"/>
+              <polygon points="0,96 30,88 36,74 0,70" fill="#2a2620" opacity="0.7"/>
+              <polygon points="96,96 60,88 68,72 96,66" fill="#342e27" opacity="0.6"/>
+              <path d="M20 10 L40 8 L52 24 L35 40 L18 32 Z" fill="none" stroke="#1e1a14" stroke-width="0.6" opacity="0.7"/>
+              <path d="M60 50 L80 48 L78 70 L62 72 Z" fill="none" stroke="#1e1a14" stroke-width="0.5" opacity="0.6"/>
+              <!-- pebbles -->
+              <circle cx="18" cy="48" r="1.2" fill="#5a5044"/>
+              <circle cx="70" cy="28" r="1" fill="#5a5044"/>
+              <circle cx="44" cy="68" r="1.4" fill="#4a4036"/>
+              <circle cx="88" cy="80" r="0.9" fill="#5a5044"/>
+            </pattern>
+            <!-- ASPHALT road (damaged) -->
+            <pattern id="asphalt" width="128" height="96" patternUnits="userSpaceOnUse">
+              <rect width="128" height="96" fill="#1c1a18"/>
+              <rect width="128" height="96" fill="#26221e" opacity="0.7"/>
+              <!-- faded center line -->
+              <rect x="0" y="46" width="28" height="3" fill="#8a7a3a" opacity="0.4"/>
+              <rect x="38" y="46" width="28" height="3" fill="#8a7a3a" opacity="0.35"/>
+              <rect x="76" y="46" width="28" height="3" fill="#8a7a3a" opacity="0.3"/>
+              <!-- cracks -->
+              <path d="M0 20 Q30 24 64 18 Q98 12 128 22" stroke="#0a0908" stroke-width="0.8" fill="none" opacity="0.8"/>
+              <path d="M0 74 Q40 68 64 76 Q90 86 128 72" stroke="#0a0908" stroke-width="0.7" fill="none" opacity="0.7"/>
+              <path d="M20 0 Q18 30 30 48 Q28 70 22 96" stroke="#0a0908" stroke-width="0.5" fill="none" opacity="0.6"/>
+              <path d="M90 0 Q96 30 86 48 Q92 70 88 96" stroke="#0a0908" stroke-width="0.5" fill="none" opacity="0.6"/>
+              <!-- oil stains -->
+              <ellipse cx="50" cy="28" rx="14" ry="5" fill="#0a0806" opacity="0.6"/>
+              <ellipse cx="100" cy="62" rx="12" ry="4" fill="#0a0806" opacity="0.55"/>
+            </pattern>
+            <!-- RUBBLE pile -->
+            <pattern id="rubble" width="48" height="48" patternUnits="userSpaceOnUse">
+              <rect width="48" height="48" fill="#3a3830"/>
+              <polygon points="4,18 16,10 22,22 10,28" fill="#5a554a"/>
+              <polygon points="16,10 22,22 32,18 28,6" fill="#4a453c"/>
+              <polygon points="22,22 32,18 38,32 24,38" fill="#6a6458"/>
+              <polygon points="4,18 10,28 2,38" fill="#2e2a24"/>
+              <polygon points="32,18 38,32 44,22 40,8" fill="#4e483e"/>
+              <!-- rebar -->
+              <line x1="14" y1="20" x2="10" y2="4" stroke="#2a2520" stroke-width="1"/>
+              <line x1="30" y1="22" x2="34" y2="6" stroke="#2a2520" stroke-width="1"/>
+              <line x1="22" y1="36" x2="26" y2="46" stroke="#2a2520" stroke-width="1"/>
+            </pattern>
+            <radialGradient id="allyGlow" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0%" stop-color="#4a8ac7" stop-opacity=".6"/>
+              <stop offset="100%" stop-color="#4a8ac7" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="enemyGlow" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0%" stop-color="#e14a3a" stop-opacity=".6"/>
+              <stop offset="100%" stop-color="#e14a3a" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="zone-ally" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="rgba(74,138,199,0.22)"/>
+              <stop offset="1" stop-color="rgba(74,138,199,0)"/>
+            </linearGradient>
+            <linearGradient id="zone-enemy" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="rgba(225,74,58,0)"/>
+              <stop offset="1" stop-color="rgba(225,74,58,0.22)"/>
+            </linearGradient>
+            <!-- Industrial sky gradient -->
+            <linearGradient id="smog" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#3a332a"/>
+              <stop offset="0.6" stop-color="#201c17"/>
+              <stop offset="1" stop-color="#0e0c08"/>
+            </linearGradient>
+            <!-- fire glow -->
+            <radialGradient id="fire" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" stop-color="#ffb040" stop-opacity="0.85"/>
+              <stop offset="0.6" stop-color="#c04010" stop-opacity="0.4"/>
+              <stop offset="1" stop-color="#ff6020" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="blur2"><feGaussianBlur stdDeviation="2"/></filter>
+          </defs>
+
+          <!-- ===== SKY / SMOG HORIZON (top 140px) ===== -->
+          <rect width="2400" height="140" fill="url(#smog)"/>
+          <!-- distant factory silhouettes -->
+          <g fill="#0a0806" opacity="0.88">
+            <rect x="40"  y="70" width="60" height="70"/>
+            <rect x="104" y="85" width="50" height="55"/>
+            <rect x="160" y="50" width="12" height="90"/>
+            <polygon points="160,50 166,40 172,50"/>
+            <rect x="210" y="80" width="80" height="60"/>
+            <rect x="290" y="60" width="14" height="80"/>
+            <polygon points="290,60 297,48 304,60"/>
+            <rect x="340" y="90" width="100" height="50"/>
+            <rect x="460" y="70" width="60" height="70"/>
+            <rect x="540" y="85" width="120" height="55"/>
+            <rect x="680" y="55" width="16" height="85"/>
+            <rect x="730" y="80" width="100" height="60"/>
+            <rect x="850" y="70" width="60" height="70"/>
+            <rect x="930" y="90" width="110" height="50"/>
+            <rect x="1060" y="60" width="18" height="80"/>
+            <polygon points="1060,60 1069,46 1078,60"/>
+            <rect x="1100" y="80" width="140" height="60"/>
+            <rect x="1260" y="70" width="70" height="70"/>
+            <rect x="1350" y="85" width="100" height="55"/>
+            <rect x="1470" y="55" width="14" height="85"/>
+            <rect x="1510" y="80" width="120" height="60"/>
+            <rect x="1650" y="65" width="80" height="75"/>
+            <rect x="1750" y="90" width="110" height="50"/>
+            <rect x="1880" y="50" width="16" height="90"/>
+            <polygon points="1880,50 1888,38 1896,50"/>
+            <rect x="1910" y="80" width="100" height="60"/>
+            <rect x="2030" y="70" width="90" height="70"/>
+            <rect x="2140" y="85" width="120" height="55"/>
+            <rect x="2280" y="70" width="80" height="70"/>
+          </g>
+          <!-- smoke plumes from chimneys -->
+          <g fill="#3a332a" opacity="0.45" filter="url(#blur2)">
+            <ellipse cx="166" cy="30" rx="25" ry="18"/>
+            <ellipse cx="297" cy="24" rx="35" ry="22"/>
+            <ellipse cx="1069" cy="20" rx="40" ry="24"/>
+            <ellipse cx="1888" cy="18" rx="45" ry="26"/>
+          </g>
+          <!-- horizon strip glow -->
+          <rect x="0" y="138" width="2400" height="2" fill="#5a3a22" opacity="0.5"/>
+
+          <!-- ===== GROUND BASE (concrete texture) ===== -->
+          <rect x="0" y="140" width="2400" height="760" fill="url(#concrete)"/>
+
+          <!-- ===== ASPHALT ROAD SEGMENTS (following the winding path) ===== -->
+          <!-- Road segment 1: horizontal across ally zone -->
+          <rect x="0"    y="410" width="560"  height="90"  fill="url(#asphalt)"/>
+          <!-- vertical segment up around rubble -->
+          <rect x="470"  y="260" width="110"  height="260" fill="url(#asphalt)"/>
+          <!-- horizontal middle-upper -->
+          <rect x="470"  y="260" width="420"  height="90"  fill="url(#asphalt)"/>
+          <!-- down around wrecked building -->
+          <rect x="800"  y="260" width="110"  height="340" fill="url(#asphalt)"/>
+          <!-- horizontal middle-lower -->
+          <rect x="800"  y="540" width="420"  height="90"  fill="url(#asphalt)"/>
+          <!-- up around shipping containers -->
+          <rect x="1130" y="340" width="110"  height="290" fill="url(#asphalt)"/>
+          <!-- horizontal upper-right-middle -->
+          <rect x="1130" y="340" width="500"  height="90"  fill="url(#asphalt)"/>
+          <!-- down around crane -->
+          <rect x="1540" y="340" width="110"  height="300" fill="url(#asphalt)"/>
+          <!-- horizontal lower-right -->
+          <rect x="1540" y="550" width="420"  height="90"  fill="url(#asphalt)"/>
+          <!-- up to enemy flag -->
+          <rect x="1870" y="410" width="110"  height="230" fill="url(#asphalt)"/>
+          <!-- horizontal final into enemy zone -->
+          <rect x="1870" y="410" width="530"  height="90"  fill="url(#asphalt)"/>
+
+          <!-- ===== ZONE OVERLAYS ===== -->
+          <rect x="0"    y="140" width="400" height="760" fill="url(#zone-ally)"/>
+          <rect x="2000" y="140" width="400" height="760" fill="url(#zone-enemy)"/>
+
+          <!-- Zone labels -->
+          <text x="40"   y="185" font-family="JetBrains Mono, monospace" font-size="22" fill="#4a8ac7" letter-spacing="8" opacity="0.85" font-weight="700">ALLY ZONE / 我方部署区</text>
+          <text x="900"  y="185" font-family="JetBrains Mono, monospace" font-size="22" fill="#d4a43a" letter-spacing="8" opacity="0.7" font-weight="700">CONTEST ZONE / 争夺区</text>
+          <text x="2020" y="185" font-family="JetBrains Mono, monospace" font-size="22" fill="#e14a3a" letter-spacing="8" opacity="0.85" font-weight="700">HOSTILE</text>
+
+          <!-- Division lines -->
+          <line x1="400"  y1="200" x2="400"  y2="900" stroke="#4a8ac7" stroke-dasharray="8 8" stroke-width="1.5" opacity="0.45"/>
+          <line x1="2000" y1="200" x2="2000" y2="900" stroke="#e14a3a" stroke-dasharray="8 8" stroke-width="1.5" opacity="0.45"/>
+
+          <!-- ===== SUGGESTED ROUTE (winding dashed arrow) ===== -->
+          <g fill="none" stroke="#ffd46a" stroke-width="3" stroke-dasharray="10 8" stroke-linecap="round" opacity="0.6">
+            <path d="M 170 455
+                     L 500 455
+                     L 525 305
+                     L 855 305
+                     L 855 585
+                     L 1185 585
+                     L 1185 385
+                     L 1595 385
+                     L 1595 595
+                     L 1925 595
+                     L 1925 455
+                     L 2230 455"/>
+          </g>
+          <!-- Arrowhead at end -->
+          <polygon points="2230,448 2250,455 2230,462" fill="#ffd46a" opacity="0.8"/>
+
+          <!-- ===== ALLY BASE + FLAG (left) ===== -->
+          <g transform="translate(150, 455)">
+            <!-- concrete pad -->
+            <rect x="-70" y="-80" width="140" height="160" fill="#2a2820" stroke="#4a8ac7" stroke-width="2"/>
+            <!-- sandbag ring -->
+            <g>
+              <ellipse cx="-55" cy="-60" rx="14" ry="7" fill="#8a7045"/>
+              <ellipse cx="-30" cy="-66" rx="14" ry="7" fill="#a08550"/>
+              <ellipse cx="0"   cy="-70" rx="14" ry="7" fill="#8a7045"/>
+              <ellipse cx="30"  cy="-66" rx="14" ry="7" fill="#a08550"/>
+              <ellipse cx="55"  cy="-60" rx="14" ry="7" fill="#8a7045"/>
+              <ellipse cx="-60" cy="60"  rx="14" ry="7" fill="#a08550"/>
+              <ellipse cx="-30" cy="66"  rx="14" ry="7" fill="#8a7045"/>
+              <ellipse cx="0"   cy="70"  rx="14" ry="7" fill="#a08550"/>
+              <ellipse cx="30"  cy="66"  rx="14" ry="7" fill="#8a7045"/>
+              <ellipse cx="60"  cy="60"  rx="14" ry="7" fill="#a08550"/>
+            </g>
+            <!-- flag glow -->
+            <circle cx="0" cy="0" r="120" fill="url(#allyGlow)"/>
+            <!-- flag pole + flag -->
+            <rect x="-3" y="-100" width="5" height="180" fill="#b8b8b8"/>
+            <polygon points="2,-100 80,-88 2,-76" fill="#4a8ac7" stroke="#2a5a82" stroke-width="1.5"/>
+            <text x="20" y="-82" font-family="Black Ops One" font-size="18" fill="#fff">★</text>
+            <!-- base label -->
+            <text x="0" y="100" text-anchor="middle" font-family="JetBrains Mono" font-size="16" font-weight="700" fill="#4a8ac7" letter-spacing="3">我方基地</text>
+            <text x="0" y="120" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#8ebfe4" letter-spacing="4">HP 18/20 · ALLY HQ</text>
+          </g>
+
+          <!-- ===== ENEMY BASE + FLAG (right) ===== -->
+          <g transform="translate(2250, 455)">
+            <rect x="-70" y="-80" width="140" height="160" fill="#2a2018" stroke="#e14a3a" stroke-width="2"/>
+            <!-- barbed wire perimeter -->
+            <g stroke="#5a5a40" stroke-width="1.2" fill="none" opacity="0.8">
+              <path d="M-65 -74 Q-40 -80 -15 -74 Q10 -68 35 -74 Q60 -80 65 -74"/>
+              <path d="M-65 74 Q-40 68 -15 74 Q10 80 35 74 Q60 68 65 74"/>
+            </g>
+            <circle cx="0" cy="0" r="120" fill="url(#enemyGlow)"/>
+            <rect x="-3" y="-100" width="5" height="180" fill="#b8b8b8"/>
+            <polygon points="2,-100 -78,-88 2,-76" fill="#e14a3a" stroke="#7a1818" stroke-width="1.5"/>
+            <text x="-26" y="-82" font-family="Black Ops One" font-size="18" fill="#fff">★</text>
+            <text x="0" y="100" text-anchor="middle" font-family="JetBrains Mono" font-size="16" font-weight="700" fill="#e14a3a" letter-spacing="3">敌方基地</text>
+            <text x="0" y="120" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#f8a090" letter-spacing="4">HP 14/20 · HOSTILE HQ</text>
+          </g>
+
+          <!-- ===== OBSTACLE 1: Rubble pile (forces path UP) ===== -->
+          <g transform="translate(665, 450)">
+            <ellipse cx="0" cy="60" rx="130" ry="12" fill="#000" opacity="0.5"/>
+            <rect x="-110" y="-60" width="220" height="120" fill="url(#rubble)" opacity="0.95"/>
+            <!-- silhouette lumps -->
+            <polygon points="-110,30 -80,-40 -30,-20 10,-50 60,-10 100,-30 110,60 -110,60" fill="#2a2420" opacity="0.85"/>
+            <!-- concrete chunks poking out -->
+            <polygon points="-60,-20 -40,-35 -30,-15 -50,0" fill="#5a544a"/>
+            <polygon points="20,-30 50,-55 70,-30 45,-10" fill="#4a4438"/>
+            <polygon points="-85,15 -65,5 -60,25 -80,30" fill="#4e483e"/>
+            <!-- rebar spikes -->
+            <line x1="-45" y1="-15" x2="-48" y2="-50" stroke="#2a2520" stroke-width="2"/>
+            <line x1="40" y1="-30" x2="35" y2="-60" stroke="#2a2520" stroke-width="2"/>
+            <line x1="0" y1="-25" x2="4" y2="-55" stroke="#2a2520" stroke-width="2"/>
+            <text x="0" y="85" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#8a7a55" letter-spacing="2">废墟堆 · RUBBLE</text>
+          </g>
+
+          <!-- ===== OBSTACLE 2: Wrecked office building ===== -->
+          <g transform="translate(1000, 410)">
+            <rect x="-100" y="-240" width="200" height="240" fill="#2a2824" stroke="#1a1815"/>
+            <!-- broken top corner (missing bite) -->
+            <polygon points="-100,-240 -30,-240 -40,-180 -100,-170" fill="#1a1a18"/>
+            <polygon points="40,-240 100,-240 100,-210 60,-200" fill="#1a1a18"/>
+            <!-- windows grid -->
+            <g fill="#6a6050" opacity="0.6">
+              <rect x="-86" y="-220" width="20" height="28"/>
+              <rect x="-60" y="-220" width="20" height="28"/>
+              <rect x="-30" y="-220" width="20" height="28"/>
+              <rect x="0"   y="-220" width="20" height="28"/>
+              <rect x="30"  y="-220" width="20" height="28"/>
+              <rect x="60"  y="-220" width="20" height="28"/>
+
+              <rect x="-86" y="-180" width="20" height="28"/>
+              <rect x="-60" y="-180" width="20" height="28" fill="#ffb040" opacity="0.4"/>
+              <rect x="-30" y="-180" width="20" height="28"/>
+              <rect x="0"   y="-180" width="20" height="28"/>
+              <rect x="30"  y="-180" width="20" height="28" fill="#ffb040" opacity="0.3"/>
+              <rect x="60"  y="-180" width="20" height="28"/>
+
+              <rect x="-86" y="-140" width="20" height="28"/>
+              <rect x="-60" y="-140" width="20" height="28"/>
+              <rect x="-30" y="-140" width="20" height="28"/>
+              <rect x="0"   y="-140" width="20" height="28"/>
+              <rect x="30"  y="-140" width="20" height="28"/>
+              <rect x="60"  y="-140" width="20" height="28"/>
+
+              <rect x="-86" y="-100" width="20" height="28"/>
+              <rect x="-60" y="-100" width="20" height="28"/>
+              <rect x="-30" y="-100" width="20" height="28"/>
+              <rect x="0"   y="-100" width="20" height="28"/>
+              <rect x="30"  y="-100" width="20" height="28"/>
+              <rect x="60"  y="-100" width="20" height="28"/>
+
+              <rect x="-86" y="-60"  width="20" height="28"/>
+              <rect x="-60" y="-60"  width="20" height="28"/>
+              <rect x="-30" y="-60"  width="20" height="28"/>
+              <rect x="0"   y="-60"  width="20" height="28"/>
+              <rect x="30"  y="-60"  width="20" height="28"/>
+              <rect x="60"  y="-60"  width="20" height="28"/>
+            </g>
+            <!-- blown-out entrance -->
+            <polygon points="-20,0 -20,-40 20,-40 20,0" fill="#000"/>
+            <polygon points="-20,-30 -5,-36 10,-30 20,-40 20,0 -20,0 -20,-35" fill="#0a0806"/>
+            <!-- scorch marks -->
+            <ellipse cx="0" cy="-5" rx="40" ry="6" fill="#000" opacity="0.6"/>
+            <!-- graffiti tag -->
+            <text x="-75" y="-40" font-family="Special Elite, monospace" font-size="14" fill="#e14a3a" opacity="0.6" transform="rotate(-8, -75, -40)">KEEP OUT</text>
+            <!-- signage -->
+            <rect x="-50" y="-270" width="100" height="20" fill="#1a1a18" stroke="#5a5040"/>
+            <text x="0" y="-255" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#8a7a55" letter-spacing="2">市政厅</text>
+          </g>
+
+          <!-- ===== OBSTACLE 3: Collapsed warehouse (lower) ===== -->
+          <g transform="translate(1000, 680)">
+            <rect x="-100" y="-80" width="200" height="160" fill="#332e28" stroke="#1a1815"/>
+            <!-- collapsed roof -->
+            <polygon points="-100,-80 100,-80 60,-50 -70,-40" fill="#1a1815"/>
+            <polygon points="-100,-80 -40,-65 -80,-20 -100,-40" fill="#222018"/>
+            <!-- sagging support beams -->
+            <line x1="-60" y1="-68" x2="-40" y2="-20" stroke="#1a1815" stroke-width="3"/>
+            <line x1="30" y1="-58" x2="50" y2="10" stroke="#1a1815" stroke-width="3"/>
+            <!-- loading bay doors -->
+            <rect x="-60" y="20" width="40" height="50" fill="#000"/>
+            <rect x="0"   y="20" width="40" height="50" fill="#000"/>
+            <g stroke="#5a5044" stroke-width="1" fill="none">
+              <line x1="-60" y1="30" x2="-20" y2="30"/>
+              <line x1="-60" y1="40" x2="-20" y2="40"/>
+              <line x1="-60" y1="50" x2="-20" y2="50"/>
+              <line x1="-60" y1="60" x2="-20" y2="60"/>
+              <line x1="0" y1="30" x2="40" y2="30"/>
+              <line x1="0" y1="40" x2="40" y2="40"/>
+              <line x1="0" y1="50" x2="40" y2="50"/>
+              <line x1="0" y1="60" x2="40" y2="60"/>
+            </g>
+            <text x="0" y="-90" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#8a7a55" letter-spacing="2">WAREHOUSE 12-B</text>
+          </g>
+
+          <!-- ===== OBSTACLE 4: Shipping container cluster ===== -->
+          <g transform="translate(1370, 490)">
+            <!-- shadow -->
+            <ellipse cx="0" cy="90" rx="130" ry="10" fill="#000" opacity="0.5"/>
+            <!-- bottom row -->
+            <rect x="-120" y="-20" width="100" height="60" fill="#6a2a1e" stroke="#2a1008" stroke-width="2"/>
+            <rect x="-20" y="-20" width="100" height="60" fill="#5a8aac" stroke="#2a4a6c" stroke-width="2"/>
+            <rect x="80"  y="-20" width="40"  height="60" fill="#4a6a2a" stroke="#1a2a0a" stroke-width="2"/>
+            <!-- top row (stacked, offset) -->
+            <rect x="-100" y="-80" width="100" height="60" fill="#6a5020" stroke="#2a1a08" stroke-width="2"/>
+            <rect x="0" y="-80" width="100" height="60" fill="#4a2a1a" stroke="#1a0806" stroke-width="2"/>
+            <!-- ridge lines on containers -->
+            <g stroke="#2a1008" stroke-width="0.5" opacity="0.5">
+              <line x1="-110" y1="-10" x2="-30" y2="-10"/>
+              <line x1="-110" y1="10"  x2="-30" y2="10"/>
+              <line x1="-110" y1="30"  x2="-30" y2="30"/>
+              <line x1="-10" y1="-10" x2="70" y2="-10"/>
+              <line x1="-10" y1="10"  x2="70" y2="10"/>
+              <line x1="-10" y1="30"  x2="70" y2="30"/>
+              <line x1="-90" y1="-70" x2="-10" y2="-70"/>
+              <line x1="-90" y1="-50" x2="-10" y2="-50"/>
+              <line x1="-90" y1="-30" x2="-10" y2="-30"/>
+              <line x1="10" y1="-70" x2="90" y2="-70"/>
+              <line x1="10" y1="-50" x2="90" y2="-50"/>
+              <line x1="10" y1="-30" x2="90" y2="-30"/>
+            </g>
+            <!-- stencil codes -->
+            <text x="-85" y="22" font-family="JetBrains Mono" font-size="11" font-weight="700" fill="#d4a43a" letter-spacing="1">TEU-0742</text>
+            <text x="15" y="22" font-family="JetBrains Mono" font-size="11" font-weight="700" fill="#f3ead0" letter-spacing="1">MRK-1138</text>
+            <text x="-65" y="-42" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#e8dcb0" letter-spacing="1">COS-5521</text>
+            <text x="40" y="-42" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#d4a43a" letter-spacing="1">HPL-9902</text>
+            <text x="0" y="-95" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#8a7a55" letter-spacing="2">货柜场 · CONTAINERS</text>
+          </g>
+
+          <!-- ===== OBSTACLE 5: Factory crane + power pylon ===== -->
+          <g transform="translate(1780, 400)">
+            <!-- base -->
+            <rect x="-35" y="160" width="70" height="24" fill="#1a1a18"/>
+            <!-- tower lattice (triangular crosshatch) -->
+            <g stroke="#5a5044" stroke-width="2" fill="none">
+              <line x1="-20" y1="160" x2="-14" y2="-180"/>
+              <line x1="20" y1="160" x2="14" y2="-180"/>
+              <line x1="-20" y1="160" x2="14" y2="-180"/>
+              <line x1="20" y1="160" x2="-14" y2="-180"/>
+              <line x1="-18" y1="120" x2="18" y2="120"/>
+              <line x1="-17" y1="80"  x2="17" y2="80"/>
+              <line x1="-16" y1="40"  x2="16" y2="40"/>
+              <line x1="-15" y1="0"   x2="15" y2="0"/>
+              <line x1="-15" y1="-40" x2="15" y2="-40"/>
+              <line x1="-14" y1="-80" x2="14" y2="-80"/>
+              <line x1="-14" y1="-120" x2="14" y2="-120"/>
+              <line x1="-14" y1="-160" x2="14" y2="-160"/>
+            </g>
+            <!-- horizontal jib -->
+            <rect x="-14" y="-190" width="180" height="14" fill="#3a3430" stroke="#1a1a18"/>
+            <g stroke="#5a5044" stroke-width="1" fill="none">
+              <line x1="-14" y1="-183" x2="166" y2="-183"/>
+              <polyline points="-14,-176 20,-190 60,-176 100,-190 140,-176 166,-190"/>
+            </g>
+            <!-- counterjib back -->
+            <rect x="-60" y="-186" width="46" height="10" fill="#3a3430"/>
+            <!-- hanging cable + hook -->
+            <line x1="120" y1="-176" x2="120" y2="-60" stroke="#1a1a18" stroke-width="1.5"/>
+            <polygon points="112,-60 128,-60 124,-48 116,-48" fill="#2a2a28"/>
+            <!-- warning light -->
+            <circle cx="0" cy="-196" r="4" fill="#e14a3a"/>
+            <circle cx="0" cy="-196" r="8" fill="#e14a3a" opacity="0.3"/>
+            <text x="60" y="-200" font-family="JetBrains Mono" font-size="11" fill="#8a7a55" letter-spacing="2">工业塔吊 · CRANE</text>
+          </g>
+
+          <!-- ===== OBSTACLE 6: Wrecked tank (decoration) ===== -->
+          <g transform="translate(2110, 580)">
+            <ellipse cx="0" cy="30" rx="60" ry="8" fill="#000" opacity="0.55"/>
+            <rect x="-50" y="-20" width="100" height="40" rx="3" fill="#3a3a30" stroke="#1a1a18"/>
+            <rect x="-60" y="-5" width="12" height="30" fill="#1a1615"/>
+            <rect x="48" y="-5" width="12" height="30" fill="#1a1615"/>
+            <circle cx="0" cy="0" r="16" fill="#2a2a22"/>
+            <rect x="12" y="-2" width="70" height="4" fill="#1a1a18" transform="rotate(-10, 12, 0)"/>
+            <!-- flames -->
+            <circle cx="-20" cy="-8" r="14" fill="url(#fire)"/>
+            <circle cx="20"  cy="-12" r="10" fill="url(#fire)"/>
+            <!-- smoke -->
+            <ellipse cx="0" cy="-50" rx="35" ry="20" fill="#3a332a" opacity="0.5" filter="url(#blur2)"/>
+            <ellipse cx="10" cy="-80" rx="30" ry="18" fill="#2a2620" opacity="0.5" filter="url(#blur2)"/>
+            <text x="0" y="50" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#8a7a55" letter-spacing="2">残骸</text>
+          </g>
+
+          <!-- ===== BURNING OIL BARRELS (atmosphere) ===== -->
+          <g>
+            <g transform="translate(380, 680)">
+              <ellipse cx="0" cy="18" rx="14" ry="4" fill="#000" opacity="0.6"/>
+              <rect x="-12" y="-20" width="24" height="38" fill="#5a3020" stroke="#2a1008"/>
+              <rect x="-12" y="-20" width="24" height="4" fill="#3a2010"/>
+              <rect x="-12" y="-4" width="24" height="2" fill="#2a1008"/>
+              <!-- flame -->
+              <circle cx="0" cy="-30" r="14" fill="url(#fire)"/>
+              <path d="M-6 -35 Q0 -55 6 -35 Q2 -25 0 -20 Q-2 -25 -6 -35" fill="#ffb040" opacity="0.8"/>
+            </g>
+            <g transform="translate(850, 740)">
+              <ellipse cx="0" cy="18" rx="14" ry="4" fill="#000" opacity="0.6"/>
+              <rect x="-12" y="-20" width="24" height="38" fill="#5a3020" stroke="#2a1008"/>
+              <circle cx="0" cy="-30" r="14" fill="url(#fire)"/>
+              <path d="M-6 -35 Q0 -55 6 -35 Q2 -25 0 -20 Q-2 -25 -6 -35" fill="#ffb040" opacity="0.8"/>
+            </g>
+            <g transform="translate(1480, 240)">
+              <ellipse cx="0" cy="18" rx="14" ry="4" fill="#000" opacity="0.6"/>
+              <rect x="-12" y="-20" width="24" height="38" fill="#5a3020" stroke="#2a1008"/>
+              <circle cx="0" cy="-30" r="14" fill="url(#fire)"/>
+              <path d="M-6 -35 Q0 -55 6 -35 Q2 -25 0 -20 Q-2 -25 -6 -35" fill="#ffb040" opacity="0.8"/>
+            </g>
+          </g>
+
+          <!-- ===== BROKEN WALLS / DEBRIS (scattered, non-blocking) ===== -->
+          <g fill="#3a3830" stroke="#1a1815" stroke-width="1">
+            <polygon points="300,680 360,680 360,620 320,614 300,650"/>
+            <polygon points="460,760 520,760 520,720 480,714"/>
+            <polygon points="710,760 780,760 780,700 730,692"/>
+            <polygon points="1580,770 1650,770 1650,720 1600,714"/>
+            <polygon points="1930,780 2000,780 2000,730 1960,722"/>
+          </g>
+          <!-- concrete slab fragments -->
+          <g fill="#4a4438" opacity="0.9">
+            <polygon points="280,560 340,550 344,580 286,588"/>
+            <polygon points="1860,210 1920,196 1926,230 1870,240"/>
+          </g>
+
+          <!-- ===== SMALL DEBRIS / PUDDLES / REBAR TUFTS ===== -->
+          <g>
+            <!-- puddles (oily, reflective) -->
+            <ellipse cx="240" cy="500" rx="32" ry="6" fill="#1a1a18" opacity="0.6"/>
+            <ellipse cx="240" cy="500" rx="18" ry="3" fill="#3a3830" opacity="0.5"/>
+            <ellipse cx="1380" cy="390" rx="28" ry="5" fill="#1a1a18" opacity="0.6"/>
+            <ellipse cx="740" cy="620" rx="40" ry="7" fill="#1a1a18" opacity="0.55"/>
+            <!-- rebar scatter -->
+            <g stroke="#2a2520" stroke-width="1.5" opacity="0.85">
+              <line x1="160" y1="660" x2="180" y2="624"/>
+              <line x1="175" y1="662" x2="188" y2="628"/>
+              <line x1="1300" y1="680" x2="1316" y2="650"/>
+              <line x1="1314" y1="682" x2="1322" y2="648"/>
+              <line x1="2040" y1="720" x2="2054" y2="690"/>
+            </g>
+            <!-- sandbag strays -->
+            <g>
+              <ellipse cx="540" cy="340" rx="18" ry="8" fill="#8a7045"/>
+              <ellipse cx="560" cy="336" rx="18" ry="8" fill="#a08550"/>
+              <ellipse cx="1680" cy="660" rx="18" ry="8" fill="#8a7045"/>
+              <ellipse cx="1700" cy="656" rx="18" ry="8" fill="#a08550"/>
+            </g>
+          </g>
+
+          <!-- ===== ALLY PLACED TOWERS / BUILDINGS ===== -->
+          <g>
+            <!-- Machine gun nest guarding road -->
+            <g transform="translate(320, 380)">
+              <rect x="-20" y="-20" width="40" height="40" fill="#3d4a2a" stroke="#1a2010" stroke-width="2"/>
+              <circle cx="0" cy="0" r="13" fill="#2a3418"/>
+              <rect x="8" y="-1" width="22" height="3" fill="#1a1a1a"/>
+              <circle cx="30" cy="0" r="3" fill="#ffdd44" opacity="0.85"/>
+              <!-- range ring -->
+              <circle cx="0" cy="0" r="110" fill="none" stroke="#d4a43a" stroke-width="1" stroke-dasharray="4 4" opacity="0.4"/>
+              <text x="0" y="38" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#d4a43a" letter-spacing="1">机枪位</text>
+            </g>
+            <!-- Sniper nest on rooftop fragment -->
+            <g transform="translate(330, 580)">
+              <rect x="-18" y="-18" width="36" height="36" fill="#3a4d24" stroke="#1a2010" stroke-width="2"/>
+              <circle cx="0" cy="0" r="11" fill="#2a3418"/>
+              <rect x="8" y="-1" width="28" height="2" fill="#1a1a1a"/>
+              <text x="0" y="34" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#d4a43a" letter-spacing="1">狙击位</text>
+            </g>
+            <!-- Gold mine -->
+            <g transform="translate(230, 580)">
+              <rect x="-22" y="-20" width="44" height="40" rx="2" fill="#5a3a1e" stroke="#d4a43a" stroke-width="2"/>
+              <text x="0" y="8" text-anchor="middle" font-family="Black Ops One" font-size="22" fill="#ffd46a">$</text>
+              <text x="0" y="-28" text-anchor="middle" font-family="JetBrains Mono" font-size="14" fill="#ffd46a" font-weight="700">+10</text>
+              <text x="0" y="36" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#d4a43a" letter-spacing="1">金矿</text>
+            </g>
+          </g>
+
+          <!-- ===== ALLY MOVING UNITS ===== -->
+          <g>
+            <!-- Militia squad just leaving base -->
+            <g transform="translate(290, 455)">
+              <circle cx="0" cy="0" r="6" fill="#c4a175"/>
+              <circle cx="14" cy="-6" r="6" fill="#c4a175"/>
+              <circle cx="22" cy="6" r="6" fill="#c4a175"/>
+              <polygon points="30,-4 40,0 30,4" fill="#4a8ac7"/>
+            </g>
+            <!-- Rifleman on first corner -->
+            <g transform="translate(530, 305)">
+              <circle cx="0" cy="-5" r="7" fill="#c49c74"/>
+              <path d="M-7 -7 Q-7 -15 0 -15 Q7 -15 7 -7" fill="#3a4a22"/>
+              <rect x="-8" y="-1" width="16" height="13" fill="#3e4d28"/>
+              <rect x="4" y="2" width="18" height="3" fill="#1a1a1a"/>
+              <rect x="-11" y="-24" width="22" height="4" fill="#000"/>
+              <rect x="-11" y="-24" width="18" height="4" fill="#6cdc5c"/>
+              <polygon points="14,-5 22,-1 14,3" fill="#4a8ac7"/>
+            </g>
+            <!-- APC mid-route on upper horizontal -->
+            <g transform="translate(770, 305)">
+              <rect x="-22" y="-14" width="44" height="28" rx="2" fill="#3d4a2a" stroke="#1a2010" stroke-width="1.5"/>
+              <circle cx="0" cy="0" r="8" fill="#2a3418"/>
+              <rect x="6" y="-1.5" width="22" height="3" fill="#1a1a1a"/>
+              <rect x="-26" y="-18" width="6" height="36" fill="#1a1f15"/>
+              <rect x="20" y="-18" width="6" height="36" fill="#1a1f15"/>
+              <rect x="-22" y="-26" width="44" height="4" fill="#000"/>
+              <rect x="-22" y="-26" width="34" height="4" fill="#6cdc5c"/>
+              <polygon points="28,-4 38,0 28,4" fill="#4a8ac7"/>
+            </g>
+            <!-- Tank on contested mid -->
+            <g transform="translate(1180, 585)">
+              <rect x="-26" y="-18" width="52" height="36" rx="2" fill="#3d4a2a" stroke="#1a2010" stroke-width="1.5"/>
+              <circle cx="0" cy="0" r="11" fill="#2a3418"/>
+              <rect x="8" y="-2" width="32" height="5" fill="#1a1a1a"/>
+              <rect x="-30" y="-22" width="6" height="44" fill="#1a1f15"/>
+              <rect x="24" y="-22" width="6" height="44" fill="#1a1f15"/>
+              <rect x="-28" y="-32" width="56" height="4" fill="#000"/>
+              <rect x="-28" y="-32" width="48" height="4" fill="#6cdc5c"/>
+              <ellipse cx="-12" cy="-6" rx="4" ry="3" fill="#5a6f3a" opacity="0.5"/>
+              <ellipse cx="14" cy="8" rx="4" ry="3" fill="#5a6f3a" opacity="0.5"/>
+              <polygon points="30,-5 42,0 30,5" fill="#4a8ac7"/>
+            </g>
+          </g>
+
+          <!-- ===== ENEMY UNITS (advancing from right) ===== -->
+          <g>
+            <!-- red infantry pair on far-right horizontal -->
+            <g transform="translate(1940, 455)">
+              <circle cx="0" cy="-4" r="7" fill="#c49575"/>
+              <path d="M-7 -6 Q-7 -14 0 -14 Q7 -14 7 -6" fill="#5a1515"/>
+              <rect x="-9" y="1" width="18" height="12" fill="#7a2020"/>
+              <rect x="-22" y="3" width="16" height="3" fill="#1a1a1a"/>
+              <rect x="-12" y="-24" width="24" height="4" fill="#000"/>
+              <rect x="-12" y="-24" width="16" height="4" fill="#e8c94a"/>
+              <polygon points="-16,-2 -26,2 -16,6" fill="#e14a3a"/>
+            </g>
+            <g transform="translate(1950, 440)">
+              <circle cx="0" cy="-4" r="7" fill="#c49575"/>
+              <path d="M-7 -6 Q-7 -14 0 -14 Q7 -14 7 -6" fill="#5a1515"/>
+              <rect x="-9" y="1" width="18" height="12" fill="#7a2020"/>
+              <rect x="-12" y="-24" width="24" height="4" fill="#000"/>
+              <rect x="-12" y="-24" width="20" height="4" fill="#6cdc5c"/>
+            </g>
+            <!-- heavy infantry approaching from right -->
+            <g transform="translate(1820, 595)">
+              <circle cx="0" cy="-5" r="8" fill="#c49575"/>
+              <path d="M-8 -7 Q-8 -16 0 -16 Q8 -16 8 -7" fill="#3a1010"/>
+              <rect x="-12" y="1" width="24" height="15" fill="#5d2020"/>
+              <circle cx="-14" cy="-4" r="3" fill="#3a1010"/>
+              <circle cx="14" cy="-4" r="3" fill="#3a1010"/>
+              <rect x="-14" y="-28" width="28" height="4" fill="#000"/>
+              <rect x="-14" y="-28" width="24" height="4" fill="#6cdc5c"/>
+              <polygon points="-18,-4 -28,0 -18,4" fill="#e14a3a"/>
+            </g>
+            <!-- enemy vehicle mid-combat -->
+            <g transform="translate(1650, 385)">
+              <rect x="-24" y="-14" width="48" height="28" rx="2" fill="#7a2e20" stroke="#3a1010" stroke-width="1.5"/>
+              <rect x="-16" y="-8" width="32" height="5" fill="#3a3a4a"/>
+              <rect x="-3" y="-18" width="6" height="10" fill="#2a2a2a"/>
+              <rect x="-18" y="-18" width="6" height="6" fill="#1a1a1a"/>
+              <rect x="12" y="-18" width="6" height="6" fill="#1a1a1a"/>
+              <rect x="-18" y="12" width="6" height="6" fill="#1a1a1a"/>
+              <rect x="12" y="12" width="6" height="6" fill="#1a1a1a"/>
+              <rect x="-22" y="-26" width="44" height="4" fill="#000"/>
+              <rect x="-22" y="-26" width="28" height="4" fill="#e8c94a"/>
+            </g>
+          </g>
+
+          <!-- ===== PROJECTILES / TRACERS ===== -->
+          <g>
+            <g stroke="#ffe070" stroke-width="1.8" opacity="0.75" stroke-linecap="round">
+              <line x1="330" y1="378" x2="420" y2="360"/>
+              <line x1="340" y1="578" x2="410" y2="460"/>
+              <line x1="1200" y1="580" x2="1280" y2="530"/>
+            </g>
+            <circle cx="430"  cy="358" r="3" fill="#ffd46a"/>
+            <circle cx="420"  cy="455" r="3" fill="#ffd46a"/>
+            <circle cx="1290" cy="525" r="3" fill="#ffd46a"/>
+            <circle cx="1660" cy="395" r="3" fill="#f84"/>
+            <!-- muzzle flashes -->
+            <circle cx="318" cy="380" r="9" fill="#ffd46a" opacity="0.9"/>
+            <circle cx="318" cy="380" r="4" fill="#fff"/>
+          </g>
+
+          <!-- ===== PLACEMENT PREVIEW CURSOR ===== -->
+          <g transform="translate(400, 510)">
+            <rect x="0" y="0" width="48" height="48" fill="rgba(212,164,58,0.22)" stroke="#d4a43a" stroke-width="2"/>
+            <circle cx="24" cy="24" r="130" fill="rgba(212,164,58,0.05)" stroke="rgba(212,164,58,0.35)" stroke-dasharray="4 4"/>
+            <text x="24" y="70" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#ffd46a" letter-spacing="1">放步枪兵?</text>
+          </g>
+
+          <!-- ===== WAYPOINT LABELS ALONG PATH ===== -->
+          <g font-family="JetBrains Mono" font-size="10" fill="#ffd46a" opacity="0.75" letter-spacing="2">
+            <text x="526" y="250" text-anchor="middle">WP-01 ↺</text>
+            <text x="855"  y="250" text-anchor="middle">WP-02 ↳</text>
+            <text x="855"  y="640" text-anchor="middle">WP-03 ↻</text>
+            <text x="1185" y="340" text-anchor="middle">WP-04 ↳</text>
+            <text x="1595" y="340" text-anchor="middle">WP-05 ↻</text>
+            <text x="1925" y="650" text-anchor="middle">WP-06 ↺</text>
+          </g>
+
+          <!-- ===== vignette ===== -->
+          <radialGradient id="vign" cx="0.5" cy="0.5" r="0.85">
+            <stop offset="0" stop-color="rgba(0,0,0,0)"/>
+            <stop offset="1" stop-color="rgba(0,0,0,0.55)"/>
+          </radialGradient>
+          <rect width="2400" height="900" fill="url(#vign)"/>
+        </svg>
+        </div><!-- /.field-canvas -->
+      </div><!-- /.field -->
+    </section>
+
+    <!-- ========= RIGHT: BUILDINGS ========= -->
+    <aside class="frame frame-brackets panel">
+      <span class="bracket-tl"></span><span class="bracket-tr"></span>
+      <span class="bracket-bl"></span><span class="bracket-br"></span>
+
+      <header class="panel-head">
+        <span class="title">建筑</span>
+        <span class="count">05</span>
+      </header>
+      <div class="panel-sub">STRUCTURES · 防御塔 / 建造物</div>
+
+      <div class="mini-card">
+        <div class="mc-icon">
+          <svg viewBox="0 0 40 40"><ellipse cx="20" cy="28" rx="14" ry="4" fill="#a08550"/><ellipse cx="20" cy="22" rx="12" ry="3.5" fill="#8a7045"/><ellipse cx="20" cy="16" rx="10" ry="3" fill="#b29870"/></svg>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-name">沙袋</div>
+          <div class="mc-role">COVER · 加 30% 塔血</div>
+          <div class="mc-cost">$ 20</div>
+        </div>
+      </div>
+
+      <div class="mini-card">
+        <div class="mc-icon">
+          <svg viewBox="0 0 40 40"><path d="M2 20 Q5 12 10 20 Q15 28 20 20 Q25 12 30 20 Q35 28 38 20" stroke="#8a8a60" stroke-width="1.5" fill="none"/><path d="M5 15 L9 11 M5 11 L9 15" stroke="#7a7a50" stroke-width="1"/><path d="M17 25 L21 29 M17 29 L21 25" stroke="#7a7a50" stroke-width="1"/><path d="M29 15 L33 11 M29 11 L33 15" stroke="#7a7a50" stroke-width="1"/></svg>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-name">铁丝网</div>
+          <div class="mc-role">BARBWIRE · 减速敌人</div>
+          <div class="mc-cost">$ 15</div>
+        </div>
+      </div>
+
+      <div class="mini-card selected">
+        <div class="mc-icon">
+          <svg viewBox="0 0 40 40"><rect x="4" y="8" width="32" height="28" rx="1" fill="#5a3a1e" stroke="#d4a43a" stroke-width="1.5"/><text x="20" y="26" text-anchor="middle" font-family="Black Ops One" font-size="14" fill="#ffd46a">$</text></svg>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-name">金矿</div>
+          <div class="mc-role">GOLD MINE · +$10 / 5s</div>
+          <div class="mc-cost">$ 150</div>
+        </div>
+        <span class="tag" style="position:absolute; top:4px; right:6px;">已选</span>
+      </div>
+
+      <div class="mini-card">
+        <div class="mc-icon">
+          <svg viewBox="0 0 40 40"><rect x="8" y="12" width="24" height="22" fill="#3d4a2a" stroke="#1a2010"/><circle cx="20" cy="22" r="6" fill="#2a3418"/><rect x="24" y="20" width="14" height="3" fill="#1a1a1a"/></svg>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-name">固定炮台</div>
+          <div class="mc-role">TURRET · 自动开火</div>
+          <div class="mc-cost">$ 200</div>
+        </div>
+      </div>
+
+      <div class="mini-card locked">
+        <div class="mc-icon">
+          <svg viewBox="0 0 40 40"><polygon points="8,34 8,14 14,10 26,10 32,14 32,34" fill="#4a6b4a" stroke="#2a3a2a"/><rect x="14" y="20" width="12" height="12" fill="#1a1a10"/><circle cx="20" cy="26" r="3" fill="#5a5a30"/></svg>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-name">军营</div>
+          <div class="mc-role">BARRACKS · 定时产兵</div>
+          <div class="mc-cost">$ 300</div>
+        </div>
+        <span class="mc-cooldown">🔒</span>
+      </div>
+    </aside>
+
+    <!-- ========= STATUS STRIP ========= -->
+    <div class="status-strip">
+      <span class="chip"><span class="dot ok"></span>AI 敌方 · 运行中</span>
+      <span class="chip"><span class="dot warn"></span>建造点 · 5 / 8</span>
+      <span class="chip"><span class="dot ok"></span>弹药 · 充足</span>
+      <span class="chip"><span class="dot err"></span>下一波 · 00:12</span>
+      <span style="color: var(--khaki);">提示：点击场上空格放置已选单位 · 不能放在敌方区域</span>
+      <span class="chip" style="color: var(--amber);">按 ESC 暂停</span>
+    </div>
+
+  </div>
+
+  <script>
+    // —— Mini-map scroll sync ——
+    (function () {
+      const field = document.getElementById('field');
+      const vp = document.getElementById('minimap-viewport');
+      const mmSvg = document.getElementById('minimap-svg');
+      if (!field || !vp || !mmSvg) return;
+
+      const mmW = 240, mmH = 90;
+
+      function sync() {
+        const sw = field.scrollWidth;
+        const sh = field.scrollHeight;
+        const cw = field.clientWidth;
+        const ch = field.clientHeight;
+        const x = (field.scrollLeft / sw) * mmW;
+        const y = (field.scrollTop / sh) * mmH;
+        const w = (cw / sw) * mmW;
+        const h = (ch / sh) * mmH;
+        vp.setAttribute('x', x);
+        vp.setAttribute('y', y);
+        vp.setAttribute('width', w);
+        vp.setAttribute('height', h);
+      }
+
+      field.addEventListener('scroll', sync);
+      window.addEventListener('resize', sync);
+
+      // Click on mini-map jumps scroll position
+      mmSvg.addEventListener('click', (ev) => {
+        const rect = mmSvg.getBoundingClientRect();
+        const mx = (ev.clientX - rect.left) / rect.width;
+        const my = (ev.clientY - rect.top) / rect.height;
+        field.scrollLeft = mx * field.scrollWidth - field.clientWidth / 2;
+        field.scrollTop  = my * field.scrollHeight - field.clientHeight / 2;
+      });
+
+      // Initial: scroll to show the battle action (around x=900)
+      setTimeout(() => {
+        field.scrollLeft = Math.min(900, field.scrollWidth - field.clientWidth);
+        sync();
+      }, 0);
+    })();
+  </script>
+
+</body>
+</html>

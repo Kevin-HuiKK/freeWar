@@ -1,0 +1,81 @@
+{
+  "militia": {
+    "name": "民兵",
+    "cost": 10,
+    "hp": 25,
+    "damage": 4,
+    "range": 50,
+    "fireRate": 1.2,
+    "speed": 44,
+    "bounty": 6,
+    "sprite": "militia",
+    "size": 36,
+    "role": "步兵 · 快出"
+  },
+  "rifleman": {
+    "name": "步枪兵",
+    "cost": 25,
+    "hp": 55,
+    "damage": 10,
+    "range": 130,
+    "fireRate": 1.0,
+    "speed": 40,
+    "bounty": 14,
+    "sprite": "rifleman",
+    "size": 40,
+    "role": "均衡中距"
+  },
+  "smg": {
+    "name": "冲锋枪兵",
+    "cost": 40,
+    "hp": 50,
+    "damage": 6,
+    "range": 80,
+    "fireRate": 3.0,
+    "speed": 48,
+    "bounty": 20,
+    "sprite": "rifleman",
+    "size": 40,
+    "role": "高射速近战"
+  },
+  "sniper": {
+    "name": "狙击手",
+    "cost": 60,
+    "hp": 35,
+    "damage": 55,
+    "range": 260,
+    "fireRate": 0.45,
+    "speed": 30,
+    "bounty": 32,
+    "sprite": "sniper",
+    "size": 44,
+    "role": "远程高伤"
+  },
+  "apc": {
+    "name": "装甲车",
+    "cost": 90,
+    "hp": 180,
+    "damage": 18,
+    "range": 120,
+    "fireRate": 0.9,
+    "speed": 38,
+    "bounty": 55,
+    "sprite": "apc",
+    "size": 50,
+    "role": "肉盾载具"
+  },
+  "tank": {
+    "name": "坦克",
+    "cost": 180,
+    "hp": 360,
+    "damage": 45,
+    "range": 180,
+    "fireRate": 0.5,
+    "speed": 28,
+    "bounty": 110,
+    "sprite": "apc",
+    "size": 56,
+    "aoeRadius": 36,
+    "role": "重装抗线"
+  }
+}

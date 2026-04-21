@@ -1,0 +1,16 @@
+{
+  "name": "PROTOCOL-B · 普通",
+  "initialDelay": 3.0,
+  "cycleInterval": [4.0, 7.0],
+  "goldPerSecond": 3,
+  "unitPool": [
+    { "type": "militia",  "weight": 30, "minGold":  10 },
+    { "type": "rifleman", "weight": 26, "minGold":  25 },
+    { "type": "smg",      "weight": 14, "minGold":  40 },
+    { "type": "sniper",   "weight": 10, "minGold":  60 },
+    { "type": "apc",      "weight": 12, "minGold":  90 },
+    { "type": "tank",     "weight":  8, "minGold": 180 }
+  ],
+  "saveUpChance": 0.35,
+  "saveUpMax": 260
+}
