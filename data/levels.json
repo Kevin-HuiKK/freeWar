@@ -1,19 +1,33 @@
 {
   "hopeLayer": {
     "name": "希望层",
-    "grid": { "cols": 10, "rows": 6, "tile": 64 },
-    "path": [[0, 3], [3, 3], [3, 1], [7, 1], [7, 4], [9, 4]],
-    "baseHP": 20,
-    "startingGold": 100,
+    "grid": { "cols": 20, "rows": 14, "tile": 48 },
+    "path": [
+      [0, 2],
+      [8, 2],
+      [8, 6],
+      [3, 6],
+      [3, 10],
+      [14, 10],
+      [14, 4],
+      [19, 4],
+      [19, 13]
+    ],
+    "baseHP": 25,
+    "startingGold": 150,
     "goldPerSecond": 2,
     "waves": [
-      { "delay": 2, "spawns": [{ "type": "lightInfantry", "count": 5, "interval": 1.0 }] },
-      { "delay": 3, "spawns": [{ "type": "lightInfantry", "count": 8, "interval": 0.8 }] },
-      { "delay": 4, "spawns": [{ "type": "heavyInfantry", "count": 4, "interval": 1.5 }] },
-      { "delay": 4, "spawns": [{ "type": "lightVehicle", "count": 6, "interval": 0.6 }] },
-      { "delay": 5, "spawns": [
-        { "type": "heavyInfantry", "count": 3, "interval": 1.2 },
-        { "type": "lightVehicle", "count": 3, "interval": 0.8 }
+      { "delay": 3, "spawns": [{ "type": "lightInfantry", "count": 8, "interval": 1.0 }] },
+      { "delay": 5, "spawns": [{ "type": "lightInfantry", "count": 12, "interval": 0.7 }] },
+      { "delay": 6, "spawns": [{ "type": "heavyInfantry", "count": 6, "interval": 1.8 }] },
+      { "delay": 6, "spawns": [
+        { "type": "lightInfantry", "count": 8, "interval": 0.6 },
+        { "type": "lightVehicle",  "count": 8, "interval": 0.9 }
+      ]},
+      { "delay": 8, "spawns": [
+        { "type": "heavyInfantry", "count": 6, "interval": 1.5 },
+        { "type": "lightVehicle",  "count": 10, "interval": 0.7 },
+        { "type": "lightInfantry", "count": 10, "interval": 0.5 }
       ]}
     ]
   }

@@ -43,34 +43,43 @@ function planDecorations(level) {
   if (level._decorations) return level._decorations;
   const { cols, rows, tile } = level.grid;
   const pathSet = cachedPathTileSet(level);
+  const occupied = new Set();
   const rng = mulberry32(42);
   const items = [];
 
-  // 2-3 craters on grass tiles, avoiding path
+  const area = cols * rows;
+  const craterTarget = Math.max(3, Math.round(area * 0.03));
+  const sandbagTarget = Math.max(3, Math.round(area * 0.035));
+
   let craters = 0;
-  for (let tries = 0; tries < 40 && craters < 3; tries++) {
+  for (let tries = 0; tries < craterTarget * 15 && craters < craterTarget; tries++) {
     const c = Math.floor(rng() * cols);
     const r = Math.floor(rng() * rows);
-    if (pathSet.has(`${c},${r}`)) continue;
-    items.push({ kind: 'crater', x: c * tile + tile / 2, y: r * tile + tile / 2, w: 40, h: 40 });
+    const key = `${c},${r}`;
+    if (pathSet.has(key) || occupied.has(key)) continue;
+    occupied.add(key);
+    items.push({ kind: 'crater', x: c * tile + tile / 2, y: r * tile + tile / 2, w: 36, h: 36 });
     craters++;
   }
 
-  // Sandbags adjacent to path (tactical flavor)
   let sandbags = 0;
-  for (let tries = 0; tries < 60 && sandbags < 3; tries++) {
+  for (let tries = 0; tries < sandbagTarget * 20 && sandbags < sandbagTarget; tries++) {
     const c = Math.floor(rng() * cols);
     const r = Math.floor(rng() * rows);
-    if (pathSet.has(`${c},${r}`)) continue;
+    const key = `${c},${r}`;
+    if (pathSet.has(key) || occupied.has(key)) continue;
     const adjacent = [[c - 1, r], [c + 1, r], [c, r - 1], [c, r + 1]]
       .some(([nc, nr]) => pathSet.has(`${nc},${nr}`));
     if (!adjacent) continue;
-    items.push({ kind: 'sandbag', x: c * tile + tile / 2, y: r * tile + tile / 2 + 4, w: 44, h: 28 });
+    occupied.add(key);
+    items.push({ kind: 'sandbag', x: c * tile + tile / 2, y: r * tile + tile / 2 + 4, w: 40, h: 26 });
     sandbags++;
   }
 
-  // Barbed wire along top edge (atmosphere)
-  items.push({ kind: 'barbwire', x: 0, y: 0, w: cols * tile, h: 20 });
+  const canvasW = cols * tile;
+  const canvasH = rows * tile;
+  items.push({ kind: 'barbwire', x: canvasW / 2, y: 10, w: canvasW, h: 20 });
+  items.push({ kind: 'barbwire', x: canvasW / 2, y: canvasH - 10, w: canvasW, h: 20 });
 
   level._decorations = items;
   return items;
