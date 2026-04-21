@@ -6,10 +6,43 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <div id="stage">
-    <canvas id="game" width="800" height="480"></canvas>
-    <aside id="menu"></aside>
+  <div id="iceberg-scene">
+    <h1>freeWar</h1>
+    <p class="subtitle">le'o 的塔防 · 选择难度</p>
+    <div id="iceberg">
+      <div class="water-line"></div>
+      <svg class="iceberg-shape" viewBox="0 0 500 700" preserveAspectRatio="none">
+        <polygon points="240,20 300,60 330,140 500,150 470,700 30,700 0,150 170,140 200,60" />
+      </svg>
+      <div class="layer" data-layer="1" data-unlocked="true" style="top: 4%;">
+        <span class="layer-name">希望层</span>
+        <span class="layer-tag">第 1 层</span>
+      </div>
+      <div class="layer" data-layer="2" style="top: 18%;"><span class="layer-name">浅层</span><span class="layer-tag">第 2 层</span></div>
+      <div class="layer" data-layer="3" style="top: 28%;"><span class="layer-name">中层</span><span class="layer-tag">第 3 层</span></div>
+      <div class="layer" data-layer="4" style="top: 38%;"><span class="layer-name">下层</span><span class="layer-tag">第 4 层</span></div>
+      <div class="layer" data-layer="5" style="top: 48%;"><span class="layer-name">深层</span><span class="layer-tag">第 5 层</span></div>
+      <div class="layer" data-layer="6" style="top: 58%;"><span class="layer-name">黑层</span><span class="layer-tag">第 6 层</span></div>
+      <div class="layer" data-layer="7" style="top: 68%;"><span class="layer-name">近渊层</span><span class="layer-tag">第 7 层</span></div>
+      <div class="layer" data-layer="8" style="top: 78%;"><span class="layer-name">暗层</span><span class="layer-tag">第 8 层</span></div>
+      <div class="layer" data-layer="9" style="top: 88%;"><span class="layer-name">深渊层</span><span class="layer-tag">第 9 层</span></div>
+    </div>
+    <p class="hint">点击"希望层"开始游戏（其他层待解锁）</p>
   </div>
+
+  <div id="level-scene" hidden>
+    <div id="stage">
+      <canvas id="game" width="800" height="480"></canvas>
+      <aside id="menu"></aside>
+    </div>
+    <div id="end-overlay" hidden>
+      <div class="end-card">
+        <div id="end-text"></div>
+        <button id="back-to-iceberg" type="button">返回冰山</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

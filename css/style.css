@@ -1,13 +1,121 @@
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  background: #222;
+  background: linear-gradient(#0a1b2a 0%, #071225 45%, #03080f 100%);
   color: #eee;
   font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+/* ---------- Iceberg scene ---------- */
+#iceberg-scene {
+  text-align: center;
+  padding: 20px;
+  width: 100%;
+  max-width: 640px;
+}
+#iceberg-scene h1 {
+  margin: 0;
+  font-size: 40px;
+  letter-spacing: 4px;
+  color: #d9ecff;
+}
+#iceberg-scene .subtitle {
+  margin: 4px 0 16px;
+  opacity: 0.7;
+  font-size: 14px;
+}
+#iceberg-scene .hint {
+  margin-top: 12px;
+  font-size: 13px;
+  opacity: 0.6;
+}
+#iceberg {
+  position: relative;
+  width: 420px;
+  height: 580px;
+  margin: 0 auto;
+}
+#iceberg .water-line {
+  position: absolute;
+  left: -40px;
+  right: -40px;
+  top: 11%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #7ab9e8, transparent);
+  opacity: 0.6;
+}
+#iceberg .iceberg-shape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+#iceberg .iceberg-shape polygon {
+  fill: url(#ice-grad);
+  stroke: rgba(255,255,255,0.25);
+  stroke-width: 1;
+}
+#iceberg .iceberg-shape {
+  filter: drop-shadow(0 0 18px rgba(120,180,230,0.25));
+}
+/* gradient via defs-in-CSS trick using background on the svg via background color layers */
+#iceberg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 6%, rgba(255,255,255,0.85), rgba(255,255,255,0.1) 18%, transparent 24%),
+    linear-gradient(to bottom,
+      rgba(225,245,255,0.92) 0%,
+      rgba(170,210,240,0.88) 12%,
+      rgba(100,155,200,0.85) 30%,
+      rgba(60,110,160,0.8) 55%,
+      rgba(25,55,95,0.82) 80%,
+      rgba(10,25,50,0.9) 100%);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 700' preserveAspectRatio='none'><polygon points='240,20 300,60 330,140 500,150 470,700 30,700 0,150 170,140 200,60' fill='white'/></svg>") center/100% 100% no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 700' preserveAspectRatio='none'><polygon points='240,20 300,60 330,140 500,150 470,700 30,700 0,150 170,140 200,60' fill='white'/></svg>") center/100% 100% no-repeat;
+  pointer-events: none;
+}
+#iceberg .iceberg-shape { display: none; }
+#iceberg .layer {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 16px;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(2px);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.35);
+  cursor: not-allowed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 110px;
+  user-select: none;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+#iceberg .layer .layer-name { font-size: 15px; font-weight: 600; letter-spacing: 2px; }
+#iceberg .layer .layer-tag { font-size: 10px; opacity: 0.7; margin-top: 2px; }
+#iceberg .layer[data-unlocked="true"] {
+  color: #fff;
+  background: rgba(255,200,70,0.22);
+  border-color: rgba(255,200,70,0.8);
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255,200,70,0.35);
+}
+#iceberg .layer[data-unlocked="true"]:hover {
+  transform: translateX(-50%) scale(1.06);
+  background: rgba(255,200,70,0.35);
+}
+
+/* ---------- Level scene ---------- */
+#level-scene {
+  position: relative;
 }
 #stage {
   display: flex;
@@ -19,8 +127,45 @@ canvas {
   display: block;
 }
 #menu {
-  width: 160px;
+  width: 170px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
+#menu button:hover {
+  filter: brightness(1.2);
+}
+
+#end-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0,0,0,0.55);
+  pointer-events: auto;
+}
+#end-overlay .end-card {
+  padding: 24px 32px;
+  background: #222;
+  border: 2px solid #666;
+  border-radius: 10px;
+  text-align: center;
+  min-width: 260px;
+}
+#end-overlay #end-text {
+  font-size: 40px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+#end-overlay button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background: #444;
+  color: #fff;
+  border: 2px solid #888;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+#end-overlay button:hover { background: #555; }
