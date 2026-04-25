@@ -7,6 +7,11 @@ import { buildUnitMenu, attachCanvasInput, updateHud, showToast } from './input.
 import { setScene, getScene, onSceneChange } from './scene.js';
 import { loadSprites } from './assets.js';
 import { AudioSystem } from './audio.js';
+import {
+  loadProfile, saveProfile,
+  addToWallet, spendFromWallet,
+  bonusGoldPrice, BONUS_GOLD_STEP
+} from './profile.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -15,7 +20,16 @@ const icebergScene = document.getElementById('iceberg-scene');
 const levelScene = document.getElementById('level-scene');
 const endOverlay = document.getElementById('end-overlay');
 const endText = document.getElementById('end-text');
+const endRewardEl = document.getElementById('end-reward');
 const backBtn = document.getElementById('back-to-iceberg');
+const metaWalletEl = document.getElementById('meta-wallet');
+const metaBonusEl = document.getElementById('meta-bonus');
+const metaWinsEl = document.getElementById('meta-wins');
+const metaLossesEl = document.getElementById('meta-losses');
+const bonusPriceEl = document.getElementById('bonus-price');
+const buyBonusBtn = document.getElementById('buy-bonus-gold');
+
+const profile = loadProfile();
 
 const [levels, enemiesData, unitsData, sprites] = await Promise.all([
   fetch('data/levels.json').then(r => r.json()),
@@ -43,7 +57,7 @@ function startLevel(levelKey) {
   canvas.height = level.grid.rows * tile;
   scheduler = new WaveScheduler(level.waves);
   economy = new Economy({
-    startingGold: level.startingGold,
+    startingGold: level.startingGold + (profile.bonusStartingGold || 0),
     goldPerSecond: level.goldPerSecond
   });
   enemies = [];
@@ -119,7 +133,23 @@ document.querySelectorAll('#iceberg .layer').forEach((el) => {
 backBtn.addEventListener('click', () => {
   audio.stopBgm();
   setScene('iceberg');
+  renderMeta();
 });
+
+if (buyBonusBtn) {
+  buyBonusBtn.addEventListener('click', () => {
+    const price = bonusGoldPrice(profile);
+    if (!spendFromWallet(profile, price)) {
+      showToast('钱包不够，去赌场赚一笔');
+      return;
+    }
+    profile.bonusStartingGold = (profile.bonusStartingGold || 0) + BONUS_GOLD_STEP;
+    saveProfile(profile);
+    renderMeta();
+  });
+}
+
+renderMeta();
 
 // Mute button in HUD
 const muteBtn = document.getElementById('hud-mute');
@@ -209,9 +239,36 @@ function endGame(result) {
   gameOver = result;
   endText.textContent = result === 'win' ? '胜利！' : '失败';
   endText.style.color = result === 'win' ? '#ffeb6b' : '#ff6b6b';
+
+  let prize, breakdown;
+  if (result === 'win') {
+    const carry = Math.floor(economy.gold * 0.5);
+    prize = 50 + carry;
+    breakdown = `胜利奖金 $50 + 余金 50%（$${carry}）`;
+    profile.levelWins += 1;
+  } else {
+    prize = 5;
+    breakdown = '安慰奖';
+    profile.levelLosses += 1;
+  }
+  addToWallet(profile, prize);
+  profile.lastLevelResult = { result, prize, at: Date.now() };
+  saveProfile(profile);
+  endRewardEl.innerHTML =
+    `钱包 +<b>$${prize}</b> <span class="end-reward-sub">（${breakdown}）</span>`;
+
   endOverlay.hidden = false;
   audio.stopBgm();
   audio.play(result === 'win' ? 'win' : 'lose');
+}
+
+function renderMeta() {
+  if (metaWalletEl) metaWalletEl.textContent = '$' + Math.floor(profile.wallet).toLocaleString();
+  if (metaBonusEl) metaBonusEl.textContent = String(profile.bonusStartingGold || 0);
+  if (metaWinsEl) metaWinsEl.textContent = String(profile.levelWins || 0);
+  if (metaLossesEl) metaLossesEl.textContent = String(profile.levelLosses || 0);
+  if (bonusPriceEl) bonusPriceEl.textContent = '$' + bonusGoldPrice(profile);
+  if (buyBonusBtn) buyBonusBtn.disabled = profile.wallet < bonusGoldPrice(profile);
 }
 
 function render() {

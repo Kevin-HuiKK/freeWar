@@ -1,3 +1,5 @@
+import { loadProfile, saveProfile } from '../../../js/profile.js';
+
 const SAVE_KEY = 'scratch-lottery-save';
 const SCHEMA_VERSION = 1;
 
@@ -30,12 +32,17 @@ export function loadState(slotCount = 4) {
     state.mineSlots.push({ ore: null, accumulated: 0, lastTickMs: Date.now() });
   }
   state.mineSlots.length = slotCount;
+  // Wallet is shared with the tower-defense main game via the profile.
+  state.money = loadProfile().wallet;
   return state;
 }
 
 export function saveState(state) {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    const profile = loadProfile();
+    profile.wallet = Math.max(0, Math.floor(state.money));
+    saveProfile(profile);
   } catch (e) {
     console.warn('save failed', e);
   }
@@ -43,6 +50,9 @@ export function saveState(state) {
 
 export function resetState() {
   localStorage.removeItem(SAVE_KEY);
+  // Also clear the shared profile so a "reset progress" in gambling
+  // wipes the wallet that the main game would otherwise still see.
+  localStorage.removeItem('freewar-profile');
 }
 
 export function effectiveScalePct(state, upgradesData) {

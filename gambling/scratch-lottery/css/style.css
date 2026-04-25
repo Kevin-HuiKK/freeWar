@@ -36,6 +36,18 @@ html, body {
   backdrop-filter: blur(6px);
 }
 .brand { font-size: 22px; font-weight: 700; }
+.back-link {
+  display: inline-flex; align-items: center;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  letter-spacing: 1px;
+  transition: background 0.15s;
+}
+.back-link:hover { background: rgba(255,255,255,0.18); }
 .hud { display: flex; gap: 14px; flex: 1; }
 .hud-cell {
   display: flex; align-items: center; gap: 6px;

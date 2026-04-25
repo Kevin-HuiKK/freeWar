@@ -39,6 +39,93 @@ body {
   font-size: 13px;
   opacity: 0.6;
 }
+
+/* Iceberg meta-panel: shared wallet, casino entry, bonus shop */
+#meta-panel {
+  margin: 18px auto 0;
+  max-width: 460px;
+  padding: 12px 16px;
+  background: linear-gradient(rgba(40,32,20,0.85), rgba(20,16,12,0.85));
+  border: 1px solid #4a3d2a;
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 18px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: "Consolas", "Courier New", "PingFang SC", monospace;
+}
+#meta-panel .meta-wallet {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  color: #ffe070;
+  letter-spacing: 1px;
+}
+#meta-panel .meta-wallet .meta-label { color: #a8946a; font-size: 13px; }
+#meta-panel .meta-wallet .hud-icon { font-size: 18px; }
+#meta-panel .meta-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+#meta-panel .meta-btn {
+  flex: 1 1 200px;
+  padding: 9px 12px;
+  background: linear-gradient(#3a3020, #1a1410);
+  color: #ffd880;
+  border: 1.5px solid #7a6238;
+  border-radius: 3px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-align: center;
+  text-decoration: none;
+  transition: border-color 0.12s, background 0.12s, transform 0.12s;
+}
+#meta-panel .meta-btn:hover:not(:disabled) {
+  background: linear-gradient(#4a3c28, #24201a);
+  border-color: #ffc040;
+  transform: translateY(-1px);
+}
+#meta-panel .meta-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+#meta-panel .casino-btn {
+  background: linear-gradient(#4a2050, #2a1030);
+  color: #ffb8e8;
+  border-color: #a060a0;
+}
+#meta-panel .casino-btn:hover {
+  background: linear-gradient(#5a3060, #3a1840);
+  border-color: #ff80ff;
+}
+#meta-panel .meta-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #a8946a;
+  letter-spacing: 1px;
+}
+#meta-panel .meta-info b { color: #e8dcb0; }
+
+#end-overlay .end-reward {
+  margin: -8px 0 18px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #ffe070;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,200,70,0.3);
+  border-radius: 3px;
+  letter-spacing: 1px;
+}
+#end-overlay .end-reward .end-reward-sub {
+  font-size: 12px;
+  color: #a8946a;
+  margin-left: 4px;
+}
 #iceberg {
   position: relative;
   width: 420px;
