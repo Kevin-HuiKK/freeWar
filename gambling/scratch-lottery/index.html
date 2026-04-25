@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>刮彩票 — le'o 设计</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header id="topbar">
+    <div class="brand">🎰 刮彩票</div>
+    <div class="hud">
+      <div class="hud-cell"><span class="hud-icon">💰</span><span id="hud-money">0</span></div>
+      <div class="hud-cell"><span class="hud-icon">🎫</span><span id="hud-scratched">0</span></div>
+      <div class="hud-cell"><span class="hud-icon">🏆</span><span id="hud-best">0</span></div>
+    </div>
+    <div class="actions">
+      <button id="btn-mute" type="button" aria-label="静音">🔊</button>
+      <button id="btn-reset" type="button" aria-label="重置进度">↻</button>
+    </div>
+  </header>
+
+  <main id="layout">
+    <section id="shop-panel" class="panel">
+      <h2 class="panel-title">🛒 买票</h2>
+      <div id="shop-cards"></div>
+    </section>
+
+    <section id="upgrade-panel" class="panel">
+      <h2 class="panel-title">⬆️ 升级</h2>
+      <div id="upgrade-list"></div>
+    </section>
+
+    <section id="card-stage" class="panel">
+      <h2 class="panel-title" id="stage-title">点 [买票] 开始</h2>
+      <div id="stage-area"></div>
+    </section>
+
+    <section id="mine-panel" class="panel">
+      <h2 class="panel-title">⛏️ 矿石商店</h2>
+      <div id="ore-shop"></div>
+    </section>
+
+    <section id="slots-panel" class="panel">
+      <h2 class="panel-title">🪨 矿位</h2>
+      <p class="hint">从矿石商店拖矿石过来 · 自动累积 · 点收集入账</p>
+      <div id="mine-slots"></div>
+    </section>
+  </main>
+
+  <div id="fx-layer"></div>
+  <div id="toast" hidden></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

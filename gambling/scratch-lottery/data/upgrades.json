@@ -1,0 +1,29 @@
+{
+  "luck": {
+    "key": "luck",
+    "name": "运气",
+    "desc": "+0.5% 命中率（封顶 +5%）",
+    "maxLevel": 10,
+    "baseCost": 200,
+    "costMul": 1.8,
+    "effectPerLevel": 0.005
+  },
+  "multiplier": {
+    "key": "multiplier",
+    "name": "奖金翻倍",
+    "desc": "中奖金额 ×N（每级 +0.2，封顶 ×2.0）",
+    "maxLevel": 5,
+    "baseCost": 800,
+    "costMul": 2.2,
+    "effectPerLevel": 0.2
+  },
+  "scale": {
+    "key": "scale",
+    "name": "金额大小",
+    "desc": "票价和奖金同步放大（封顶 ×7.0）",
+    "maxLevel": 6,
+    "baseCost": 1500,
+    "costMul": 2.5,
+    "effectPerLevel": 1.0
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "slots": 4,
+  "offlineCapHours": 4,
+  "ores": {
+    "iron":   { "key": "iron",   "name": "铁",  "buyCost": 100,  "yieldPerSec": 5,   "stockMax": 3 },
+    "copper": { "key": "copper", "name": "铜",  "buyCost": 500,  "yieldPerSec": 20,  "stockMax": 2 },
+    "silver": { "key": "silver", "name": "银",  "buyCost": 2000, "yieldPerSec": 50,  "stockMax": 1 },
+    "gold":   { "key": "gold",   "name": "金",  "buyCost": 5000, "yieldPerSec": 100, "stockMax": 1 }
+  }
+}
