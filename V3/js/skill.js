@@ -12,8 +12,8 @@ export function activateSkill(nationId, skillId) {
   applyEffect(nationId, s);
   n.skillCD[skillId] = s.cd;
   if (nationId === state.player) {
-    logEvent('diplo', s.icon, `使用 ${s.name}`);
-    logCombat(`✓ 使用国家技能: ${s.name}`, 'log-blue');
+    logEvent('diplo', s.icon, `Used ${s.name}`);
+    logCombat(`✓ National skill: ${s.name}`, 'log-blue');
   }
   return true;
 }

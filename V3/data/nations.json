@@ -2,74 +2,101 @@
   "nations": [
     {
       "id": "blue",
-      "name": "蓝海联邦",
+      "name": "Blue Federation",
+      "shortName": "Blue",
       "color": "#3a78ff",
       "colorLight": "#7ba4ff",
-      "isPlayer": true,
-      "capital": "T01",
+      "isPlayer": false,
+      "capital": "T29",
       "startResources": { "gold": 200, "food": 100, "oil": 50, "tech": 0 },
       "stability": 72,
       "rank": 2,
-      "icon": "👑"
+      "icon": "🌊",
+      "tagline": "Sea power. Coastal cities, navy bonus.",
+      "aggression": 0.5
     },
     {
       "id": "green",
-      "name": "绿原帝国",
+      "name": "Green Empire",
+      "shortName": "Green",
       "color": "#3aaa3a",
       "colorLight": "#6cd06c",
       "isPlayer": false,
-      "capital": "T11",
+      "capital": "T06",
       "startResources": { "gold": 250, "food": 140, "oil": 40, "tech": 0 },
       "stability": 80,
       "rank": 1,
-      "icon": "👑"
+      "icon": "🌾",
+      "tagline": "Rich farms. Big food and gold income.",
+      "aggression": 0.4
     },
     {
       "id": "red",
-      "name": "红焰共和国",
+      "name": "Red Republic",
+      "shortName": "Red",
       "color": "#d73a3a",
       "colorLight": "#ff6c6c",
       "isPlayer": false,
-      "capital": "T23",
+      "capital": "T14",
       "startResources": { "gold": 220, "food": 100, "oil": 80, "tech": 0 },
       "stability": 65,
       "rank": 3,
       "icon": "🔥",
-      "aggression": 0.8
+      "tagline": "Aggressive. High oil, fast army growth.",
+      "aggression": 0.85
     },
     {
       "id": "yellow",
-      "name": "黄沙王国",
+      "name": "Sand Kingdom",
+      "shortName": "Sand",
       "color": "#d8a528",
       "colorLight": "#ffd060",
       "isPlayer": false,
-      "capital": "T17",
+      "capital": "T22",
       "startResources": { "gold": 180, "food": 80, "oil": 100, "tech": 0 },
       "stability": 60,
       "rank": 4,
-      "icon": "🛡"
+      "icon": "🏜",
+      "tagline": "Central position. Most oil, low food.",
+      "aggression": 0.5
     },
     {
       "id": "teal",
-      "name": "青林部落",
+      "name": "Forest Tribe",
+      "shortName": "Forest",
       "color": "#28a890",
       "colorLight": "#6cd0bc",
       "isPlayer": false,
-      "capital": "T07",
+      "capital": "T01",
       "startResources": { "gold": 150, "food": 120, "oil": 20, "tech": 0 },
       "stability": 75,
       "rank": 5,
       "icon": "🌲",
+      "tagline": "Hidden in woods. Hard to find, easy to defend.",
       "aggression": 0.3
+    },
+    {
+      "id": "black",
+      "name": "Stone Alliance",
+      "shortName": "Stone",
+      "color": "#5a5a6a",
+      "colorLight": "#9c9caa",
+      "isPlayer": false,
+      "capital": "T35",
+      "startResources": { "gold": 200, "food": 80, "oil": 60, "tech": 0 },
+      "stability": 70,
+      "rank": 6,
+      "icon": "⛰",
+      "tagline": "Mountain forts. Tough to crack, slow to grow.",
+      "aggression": 0.6
     }
   ],
   "_initialDiplomacy": {
-    "_note": "Pairwise relation 0-100. <30=hostile, 30-60=neutral, >60=friendly.",
-    "blue":   { "green": 85, "red": 20, "yellow": 50, "teal": 65 },
-    "green":  { "blue": 85, "red": 30, "yellow": 45, "teal": 70 },
-    "red":    { "blue": 20, "green": 30, "yellow": 40, "teal": 25 },
-    "yellow": { "blue": 50, "green": 45, "red": 40, "teal": 55 },
-    "teal":   { "blue": 65, "green": 70, "red": 25, "yellow": 55 }
-  },
-  "_initialWars": [["blue","red"], ["blue","yellow"], ["green","red"]]
+    "blue":   { "green": 80, "red": 25, "yellow": 50, "teal": 65, "black": 40 },
+    "green":  { "blue": 80, "red": 30, "yellow": 50, "teal": 70, "black": 45 },
+    "red":    { "blue": 25, "green": 30, "yellow": 45, "teal": 25, "black": 40 },
+    "yellow": { "blue": 50, "green": 50, "red": 45, "teal": 55, "black": 45 },
+    "teal":   { "blue": 65, "green": 70, "red": 25, "yellow": 55, "black": 50 },
+    "black":  { "blue": 40, "green": 45, "red": 40, "yellow": 45, "teal": 50 }
+  }
 }

@@ -2,20 +2,30 @@
 import { state, loadAll, initRuntime, yearLabel, isAtWar } from './state.js';
 import { init as initMap, draw as drawMap } from './map.js';
 import { bindAll } from './input.js';
-import { refreshAll, logEvent, setHint, hideModal } from './hud.js';
+import { refreshAll, logEvent, setHint } from './hud.js';
 import { spawnUnit } from './unit.js';
 import { hasSave, load as loadSave, save as writeSave } from './save.js';
 
 let booted = false;
+let pickedNation = 'blue';
+let pickedDiff = 'normal';
+
+const DIFF_DESCS = {
+  easy:   'AI ×0.7 · Easier · Player gold 300',
+  normal: 'AI ×1.0 · Standard · Player gold 200',
+  hard:   'AI ×1.4 · Tougher · Player gold 200',
+};
 
 async function preload() {
   await loadAll();
-  // Bind difficulty buttons (data only)
+  // Default pick = first nation in file (Blue)
+  pickedNation = state.nationDefs[0].id;
   bindMenu();
 }
 
-function startGame(diff) {
-  state.difficulty = diff || 'normal';
+function startGame() {
+  state.player = pickedNation;
+  state.difficulty = pickedDiff;
   initRuntime();
   setupStartingArmies();
   if (!booted) {
@@ -23,40 +33,38 @@ function startGame(diff) {
     bindAll();
     booted = true;
   } else {
-    // re-init the map for new game
     drawMap();
   }
   refreshAll();
   document.getElementById('main-menu').classList.add('hidden');
-  // welcome hints
+  // Initial briefing
   const enemies = [];
   for (const w of state.wars) {
     const [a, b] = w.split(':');
     if (a === state.player) enemies.push(b);
     if (b === state.player) enemies.push(a);
   }
-  setHint(`第 1 回合 · 已与 ${enemies.map(id => state.nations[id].name).join('、')} 处于交战 · 选择单位进攻！`, true);
+  const me = state.nations[state.player];
+  const intro = enemies.length
+    ? `Turn 1 · ${me.name} · already at war with ${enemies.map(id => state.nations[id].name).join(', ')}`
+    : `Turn 1 · ${me.name} · pick a unit, right-click target to attack`;
+  setHint(intro, true);
 }
 
 function setupStartingArmies() {
-  // clear previous units (in case of restart)
   state.units.length = 0;
-
   for (const nid of Object.keys(state.nations)) {
     const n = state.nations[nid];
-    spawnUnit('U001', 1, nid, n.capital);    // 民兵
-    spawnUnit('U002', 1, nid, n.capital);    // 标准步兵
+    spawnUnit('U001', 1, nid, n.capital);
     spawnUnit('U002', 1, nid, n.capital);
-    // Coastal nations get a 巡逻艇 to enable naval play
+    spawnUnit('U002', 1, nid, n.capital);
     const cap = state.territoriesById[n.capital];
     if (cap && (cap.terrain === 'coast' || cap.terrain === 'sea')) {
       spawnUnit('U031', 1, nid, n.capital);
     }
-    // Player extras
     if (nid === state.player) {
-      spawnUnit('U011', 1, nid, n.capital);   // 轻型坦克
+      spawnUnit('U011', 1, nid, n.capital);
     }
-    // one extra militia at a non-capital city
     const others = state.territories.filter(t => t.owner === nid && t.id !== n.capital);
     if (others.length) {
       const pick = others[Math.floor(Math.random() * others.length)];
@@ -64,48 +72,83 @@ function setupStartingArmies() {
     }
   }
   state.log.length = 0;
-  logEvent('event', '🌅', `游戏开始 · 红线群岛 · 难度 ${diffLabel()}`);
+  const me = state.nations[state.player];
+  logEvent('event', '🌅', `Game start · ${me.name} · Difficulty: ${diffLabel()}`);
   for (const w of state.wars) {
     const [a, b] = w.split(':');
     if (a === state.player || b === state.player) {
       const other = a === state.player ? b : a;
-      logEvent('war', '⚔', `${state.nations[other].name}与我方处于战争状态`);
+      logEvent('war', '⚔', `${state.nations[other].name} is at war with us`);
     }
   }
 }
 
 function diffLabel() {
-  return state.difficulty === 'easy' ? '🐣 菜鸟' : state.difficulty === 'hard' ? '🔥 老手' : '⚔ 正常';
+  return state.difficulty === 'easy' ? 'Easy' : state.difficulty === 'hard' ? 'Hard' : 'Normal';
+}
+
+function buildNationPicker() {
+  const box = document.getElementById('nation-picker');
+  if (!box) return;
+  box.innerHTML = state.nationDefs.map(n => `
+    <div class="nation-pick ${n.id === pickedNation ? 'selected' : ''}" data-id="${n.id}">
+      <div class="np-flag" style="background:${n.color}">${n.icon || '⚑'}</div>
+      <div class="np-name">${n.name}</div>
+    </div>`).join('');
+  const tagline = document.getElementById('nation-tagline');
+  const cur = state.nationDefs.find(n => n.id === pickedNation);
+  if (tagline && cur) tagline.textContent = cur.tagline || '';
+  box.addEventListener('click', e => {
+    const card = e.target.closest('.nation-pick');
+    if (!card) return;
+    pickedNation = card.dataset.id;
+    box.querySelectorAll('.nation-pick').forEach(c => c.classList.toggle('selected', c.dataset.id === pickedNation));
+    const sel = state.nationDefs.find(n => n.id === pickedNation);
+    if (tagline && sel) tagline.textContent = sel.tagline || '';
+  }, { once: true });   // re-bind after each render via the same event flow; we re-render once on entry
 }
 
 function bindMenu() {
   const menu = document.getElementById('main-menu');
+  buildNationPicker();
+  // event delegation for picker (since we use { once:true } re-runs would lose listener)
+  document.getElementById('nation-picker').addEventListener('click', e => {
+    const card = e.target.closest('.nation-pick');
+    if (!card) return;
+    pickedNation = card.dataset.id;
+    document.querySelectorAll('#nation-picker .nation-pick').forEach(c =>
+      c.classList.toggle('selected', c.dataset.id === pickedNation));
+    const sel = state.nationDefs.find(n => n.id === pickedNation);
+    const tag = document.getElementById('nation-tagline');
+    if (tag && sel) tag.textContent = sel.tagline || '';
+  });
+
   // Difficulty buttons
-  let pickedDiff = 'normal';
   const descBox = document.getElementById('diff-desc');
-  const descs = {
-    easy:   'AI 资源 ×0.7、AI 攻击性 ×0.6、玩家起始金币 300 — 适合入门',
-    normal: 'AI 资源 ×1.0、AI 攻击性 ×1.0、玩家起始金币 200 — 标准对战',
-    hard:   'AI 资源 ×1.4、AI 攻击性 ×1.4、玩家起始金币 200 — 老手挑战',
-  };
+  if (descBox) descBox.textContent = DIFF_DESCS[pickedDiff];
   document.querySelectorAll('.diff-btn').forEach(b => {
     b.addEventListener('click', () => {
       document.querySelectorAll('.diff-btn').forEach(x => x.classList.remove('selected'));
       b.classList.add('selected');
       pickedDiff = b.dataset.diff;
-      descBox.textContent = descs[pickedDiff];
+      if (descBox) descBox.textContent = DIFF_DESCS[pickedDiff];
     });
   });
 
-  document.getElementById('btn-new-game').addEventListener('click', () => startGame(pickedDiff));
+  document.getElementById('btn-new-game').addEventListener('click', startGame);
 
   const loadBtn = document.getElementById('btn-load-game');
   if (hasSave()) {
     loadBtn.disabled = false;
     loadBtn.addEventListener('click', () => {
-      // need to init runtime first to populate nations
+      // Read player from save first
+      const raw = localStorage.getItem('freeWar_V3_save');
+      try {
+        const dump = JSON.parse(raw);
+        state.player = dump.player || pickedNation;
+        state.difficulty = dump.difficulty || 'normal';
+      } catch (e) { state.player = pickedNation; }
       if (!booted) {
-        // partial init: load JSONs were done; now init runtime then load save
         initRuntime();
         initMap();
         bindAll();
@@ -115,8 +158,8 @@ function bindMenu() {
         menu.classList.add('hidden');
         refreshAll();
         drawMap();
-        logEvent('event', '💾', '已读取存档');
-        setHint('存档已读取', true);
+        logEvent('event', '💾', 'Save loaded');
+        setHint('Save loaded', true);
       }
     });
   } else {
@@ -126,12 +169,11 @@ function bindMenu() {
   const muteBtn = document.getElementById('btn-mute');
   muteBtn.addEventListener('click', () => {
     state.muted = !state.muted;
-    muteBtn.textContent = state.muted ? '🔇 音效（关）' : '🔊 音效（开）';
+    muteBtn.textContent = state.muted ? '🔇 Sound (off)' : '🔊 Sound (on)';
   });
-  muteBtn.textContent = state.muted ? '🔇 音效（关）' : '🔊 音效（开）';
+  muteBtn.textContent = state.muted ? '🔇 Sound (off)' : '🔊 Sound (on)';
 }
 
-// Auto-save every 3 turns
 let lastSavedTurn = 0;
 setInterval(() => {
   if (booted && state.turn !== lastSavedTurn && state.turn % 3 === 0 && !state.ended) {
@@ -141,10 +183,10 @@ setInterval(() => {
 }, 1500);
 
 preload().catch(err => {
-  console.error('V3 preload failed:', err);
+  console.error('V3 boot failed:', err);
   document.body.innerHTML = `<div style="padding:40px;color:#f88;font-family:monospace">
-    <h2>V3 启动失败</h2>
+    <h2>V3 Boot Failed</h2>
     <pre>${err.stack || err.message}</pre>
-    <p>请确认通过本地服务器（http://localhost:8000/V3/）打开，而不是直接 file://</p>
+    <p>Open via local server (e.g., python3 -m http.server 8000) — not file://</p>
   </div>`;
 });

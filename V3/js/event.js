@@ -45,7 +45,7 @@ function applyEvent(e) {
 
   const title = e.desc.replace('{nation}', n.name);
   if (targetId === state.player) {
-    logEvent('event', e.icon, title.startsWith(n.name) ? title.replace(n.name, '我方') : title);
+    logEvent('event', e.icon, title.startsWith(n.name) ? title.replace(n.name, 'We') : title);
   } else {
     logEvent('event', e.icon, title);
   }

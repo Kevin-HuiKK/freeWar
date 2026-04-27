@@ -1,60 +1,57 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>红线群岛战争 · freeWar V3</title>
-  <meta name="viewport" content="width=1280" />
+  <title>Red Line Islands War · freeWar V3</title>
+  <meta name="viewport" content="width=1400" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <nav class="mockup-nav">
     <span class="nav-tag">FREEWAR</span>
-    <a href="../index.html">v1 经典</a>
-    <a href="../v2/index.html">v2 双方对攻</a>
-    <a href="../gambling/scratch-lottery/index.html">刮彩票</a>
-    <a href="index.html" class="active">V3 红线群岛</a>
+    <a href="../index.html">v1 Tower Defense</a>
+    <a href="../v2/index.html">v2 Two Sides</a>
+    <a href="../gambling/scratch-lottery/index.html">Scratch Lottery</a>
+    <a href="index.html" class="active">V3 Red Line Islands</a>
   </nav>
 
   <main id="app">
-    <!-- 顶栏 HUD -->
     <header id="topbar">
-      <button class="icon-btn" id="btn-menu" title="菜单">⚙</button>
-      <div class="topbar-cell year"><span id="hud-year">第 1 年 春季</span></div>
-      <div class="topbar-cell res gold">🟡 <span id="hud-gold">0</span><span class="delta" id="hud-gold-d"></span></div>
-      <div class="topbar-cell res food">🌾 <span id="hud-food">0</span><span class="delta" id="hud-food-d"></span></div>
+      <button class="icon-btn" id="btn-menu" title="Menu">⚙</button>
+      <div class="topbar-cell year"><span id="hud-year">Year 1 Spring</span></div>
+      <div class="topbar-cell res gold">🟡 <span id="hud-gold">0</span></div>
+      <div class="topbar-cell res food">🌾 <span id="hud-food">0</span></div>
       <div class="topbar-cell res pop">👥 <span id="hud-pop">0</span></div>
       <div class="topbar-cell res tech">🧪 <span id="hud-tech">0</span></div>
-      <div class="topbar-cell stab">稳定度 <span id="hud-stab">0%</span> <div class="stab-bar"><div id="hud-stab-fill"></div></div></div>
+      <div class="topbar-cell stab">Stability <span id="hud-stab">0%</span> <div class="stab-bar"><div id="hud-stab-fill"></div></div></div>
       <div class="topbar-cell oil">🛢 <span id="hud-oil">0</span></div>
-      <div class="topbar-cell turn-info">回合: <b id="hud-turn">1</b></div>
-      <button class="topbar-menu" id="btn-topmenu">菜单</button>
+      <div class="topbar-cell turn-info">Turn <b id="hud-turn">1</b></div>
+      <button class="topbar-menu" id="btn-topmenu">Menu</button>
     </header>
 
     <div id="layout">
-      <!-- 左栏：国家面板 + 外交 -->
       <aside id="left-panel">
         <div class="panel-block nation-card" id="nation-card">
           <div class="crown" id="nation-icon">👑</div>
-          <div class="nation-name" id="nation-name">蓝海联邦</div>
-          <div class="nation-meta">国力排名: <b id="nation-rank">2</b></div>
-          <div class="nation-meta">领土: <b id="nation-territories">6</b> 块</div>
+          <div class="nation-name" id="nation-name">Blue Federation</div>
+          <div class="nation-meta">Rank: <b id="nation-rank">2</b></div>
+          <div class="nation-meta">Lands: <b id="nation-territories">6</b></div>
         </div>
         <div class="panel-block stats-block">
-          <div class="stat-row"><span>人口</span><b id="stat-pop">0</b></div>
-          <div class="stat-row"><span>经济</span><b id="stat-econ">0</b></div>
-          <div class="stat-row"><span>军力</span><b id="stat-army">0</b></div>
-          <div class="stat-row"><span>科技</span><b id="stat-tech">0</b></div>
-          <div class="stat-row"><span>稳定度</span><b id="stat-stab">0%</b></div>
+          <div class="stat-row"><span>People</span><b id="stat-pop">0</b></div>
+          <div class="stat-row"><span>Money</span><b id="stat-econ">0</b></div>
+          <div class="stat-row"><span>Army</span><b id="stat-army">0</b></div>
+          <div class="stat-row"><span>Tech</span><b id="stat-tech">0</b></div>
+          <div class="stat-row"><span>Stability</span><b id="stat-stab">0%</b></div>
         </div>
         <div class="panel-block">
-          <div class="panel-title">外交关系</div>
+          <div class="panel-title">Diplomacy</div>
           <div id="diplo-list"></div>
-          <button class="big-btn" id="btn-diplo">外交</button>
-          <button class="big-btn" id="btn-tech">科技</button>
+          <button class="big-btn" id="btn-diplo">Diplomacy</button>
+          <button class="big-btn" id="btn-tech">Tech Tree</button>
         </div>
       </aside>
 
-      <!-- 中央：地图 -->
       <section id="map-area">
         <svg id="map-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
           <defs></defs>
@@ -62,35 +59,32 @@
         <div id="tooltip" class="hidden"></div>
         <div id="action-bar" class="hidden">
           <span id="action-info"></span>
-          <button id="act-build" class="act-btn">造兵 (B)</button>
-          <button id="act-cancel" class="act-btn ghost">取消 (ESC)</button>
+          <button id="act-build" class="act-btn">Build (B)</button>
+          <button id="act-cancel" class="act-btn ghost">Cancel (ESC)</button>
         </div>
         <div id="hint-bar"></div>
         <div id="selection-panel" class="hidden"></div>
       </section>
 
-      <!-- 右栏：事件日志 + 小地图 -->
       <aside id="right-panel">
         <div class="panel-block">
-          <div class="panel-title">事件日志</div>
+          <div class="panel-title">Event Log</div>
           <div id="event-list"></div>
-          <button class="big-btn ghost" id="btn-events">查看全部事件</button>
+          <button class="big-btn ghost" id="btn-events">View All Events</button>
         </div>
         <div class="panel-block minimap-block">
           <canvas id="minimap" width="200" height="120"></canvas>
         </div>
-        <button id="btn-end-turn">结束回合</button>
+        <button id="btn-end-turn">End Turn</button>
       </aside>
     </div>
 
-    <!-- 底栏：国家技能 -->
     <footer id="bottombar">
-      <div class="skill-title">国家技能</div>
+      <div class="skill-title">National Skills</div>
       <div id="skill-bar"></div>
       <div id="combat-log"></div>
     </footer>
 
-    <!-- 弹窗占位 -->
     <div id="modal-mask" class="hidden">
       <div id="modal-box">
         <button id="modal-close">×</button>
@@ -98,27 +92,37 @@
       </div>
     </div>
 
-    <!-- 主菜单 -->
+    <!-- Main Menu with nation picker -->
     <div id="main-menu">
-      <h1>🌊 红线群岛战争</h1>
-      <p class="subtitle">le'o 设计 · freeWar V3 · 回合制策略</p>
+      <h1>🌊 Red Line Islands War</h1>
+      <p class="subtitle">freeWar V3 · Turn-based strategy</p>
 
-      <div class="diff-row">
-        <button class="diff-btn" data-diff="easy">🐣 菜鸟</button>
-        <button class="diff-btn selected" data-diff="normal">⚔ 正常</button>
-        <button class="diff-btn" data-diff="hard">🔥 老手</button>
+      <div class="menu-section">
+        <div class="menu-section-title">Pick your nation</div>
+        <div id="nation-picker"></div>
+        <div id="nation-tagline" class="diff-desc"></div>
       </div>
-      <div id="diff-desc" class="diff-desc">AI 资源 ×1.0、AI 攻击性 ×1.0、玩家起始金币 200</div>
 
-      <button id="btn-new-game" class="menu-btn primary">新游戏 · 蓝海联邦</button>
-      <button id="btn-load-game" class="menu-btn">继续上次</button>
-      <button id="btn-mute" class="menu-btn ghost">🔇 音效</button>
+      <div class="menu-section">
+        <div class="menu-section-title">Difficulty</div>
+        <div class="diff-row">
+          <button class="diff-btn" data-diff="easy">🐣 Easy</button>
+          <button class="diff-btn selected" data-diff="normal">⚔ Normal</button>
+          <button class="diff-btn" data-diff="hard">🔥 Hard</button>
+        </div>
+        <div id="diff-desc" class="diff-desc">AI ×1.0 · Player gold 200</div>
+      </div>
+
+      <button id="btn-new-game" class="menu-btn primary">Start Game</button>
+      <button id="btn-load-game" class="menu-btn">Load Saved</button>
+      <button id="btn-mute" class="menu-btn ghost">🔇 Sound (off)</button>
+
       <p class="hint">
-        <b>左键</b> 我方领土 = 选中该领土所有未动单位<br/>
-        <b>右键</b> 目标领土 = 下令（🟢 移动 / 🔴 进攻 / 🟡 占领 / ⚪ 不可入）<br/>
-        左下角面板可点击单独勾选/取消单个士兵 · 造兵可批量加 +/−<br/>
-        ESC = 取消 · Enter = 结束回合 · B = 造兵 · 按住空格 = AI ×4 加速<br/>
-        胜利：占领所有敌方首都
+        <b>Left-click</b> your land = pick all your unmoved units there<br/>
+        <b>Right-click</b> a target = order them (🟢 move / 🔴 attack / 🟡 take / ⚪ blocked)<br/>
+        Bottom-left panel: pick units one by one · Build menu: + / − for stacks<br/>
+        ESC = cancel · Enter = end turn · B = build · Hold Space = AI ×4 speed<br/>
+        Win: take every enemy capital
       </p>
     </div>
   </main>

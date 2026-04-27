@@ -25,7 +25,7 @@ export function resolveBattle(attackers, defenders, terrain, atkBuffs = {}, defB
     aTarget.hp -= aDmg;
     log.push({ side: 'atk', text: `${aDef.name} → ${tDef.name} (-${aDmg})` });
     if (aTarget.hp <= 0) {
-      log.push({ side: 'atk', text: `☠ ${tDef.name} 阵亡` });
+      log.push({ side: 'atk', text: `☠ ${tDef.name} KIA` });
       defenders.splice(defenders.indexOf(aTarget), 1);
       if (defenders.length === 0) break;
     }
@@ -39,7 +39,7 @@ export function resolveBattle(attackers, defenders, terrain, atkBuffs = {}, defB
       dTarget.hp -= dDmg;
       log.push({ side: 'def', text: `${dDef.name} → ${tDef2.name} (-${dDmg})` });
       if (dTarget.hp <= 0) {
-        log.push({ side: 'def', text: `☠ ${tDef2.name} 阵亡` });
+        log.push({ side: 'def', text: `☠ ${tDef2.name} KIA` });
         attackers.splice(attackers.indexOf(dTarget), 1);
       }
     }

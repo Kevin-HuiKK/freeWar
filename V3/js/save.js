@@ -9,6 +9,7 @@ export function save() {
     year: state.year,
     season: state.season,
     player: state.player,
+    difficulty: state.difficulty,
     nations: serializeNations(),
     territories: state.territories.map(t => ({ id: t.id, owner: t.owner })),
     units: state.units.map(u => ({ ...u })),

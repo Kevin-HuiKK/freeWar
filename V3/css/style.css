@@ -316,7 +316,7 @@ html, body { margin:0; padding:0; height:100%; background:var(--bg-deep); color:
 
 /* === Fast-forward indicator === */
 body.fast-forward::after {
-  content: "⏩ 加速 ×4 (松开恢复)";
+  content: "⏩ Fast-forward ×4 (release Space)";
   position: fixed; bottom: 110px; right: 16px;
   background: rgba(255,140,0,0.95); color: #fff;
   padding: 6px 14px; border-radius: 14px;
@@ -510,7 +510,40 @@ body.fast-forward::after {
 #main-menu h1 { font-size:48px; margin:0; color:var(--accent); text-shadow:0 4px 20px rgba(78,160,255,0.5); }
 #main-menu .subtitle { color:var(--muted); margin:0; }
 
-.diff-row { display:flex; gap:10px; margin-top: 10px; }
+.menu-section { margin-top: 10px; display:flex; flex-direction:column; align-items:center; gap:6px; }
+.menu-section-title { color: var(--muted); font-size: 13px; letter-spacing: 1px; text-transform: uppercase; }
+
+#nation-picker {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+}
+.nation-pick {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 8px 10px;
+  background: rgba(0,0,0,0.3);
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer; transition: 0.15s;
+  min-width: 90px;
+}
+.nation-pick:hover { border-color: var(--accent); transform: translateY(-2px); }
+.nation-pick.selected {
+  border-color: white;
+  background: rgba(78,160,255,0.2);
+  box-shadow: 0 0 12px var(--accent);
+}
+.nation-pick .np-flag {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  border: 2px solid white;
+}
+.nation-pick .np-name { font-size: 12px; font-weight: 600; color: var(--text); }
+
+.diff-row { display:flex; gap:10px; margin-top: 6px; }
 .diff-btn {
   padding: 10px 20px; background: rgba(0,0,0,0.4); border: 2px solid var(--line);
   color: var(--text); border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: 600;

@@ -13,7 +13,7 @@ export async function endPlayerTurn() {
     if (id === state.player) continue;
     if (state.nations[id].defeated) continue;
     setAITurnBanner(id);
-    setHint(`${state.nations[id].name} 行动中…`, true);
+    setHint(`${state.nations[id].name} is taking their turn…`, true);
     await runAITurn(id);
     await new Promise(r => setTimeout(r, 400));
   }
@@ -69,7 +69,7 @@ function advanceTurn() {
       const cap = state.territoriesById[n.capital];
       if (cap && cap.owner !== nid) {
         n.defeated = true;
-        logEvent('war', '💀', `${n.name}首都失守，覆灭！`);
+        logEvent('war', '💀', `${n.name}'s capital fell — they are defeated!`);
       }
     }
   }
@@ -135,25 +135,25 @@ export function resolveTerritoryConflict(territoryId, attackerNation) {
   }
   if (result.defSurv.length === 0 && result.atkSurv.length > 0) {
     const aname = state.nations[attackerNation].name;
-    const dname = dn?.name || '敌军';
+    const dname = dn?.name || 'enemy';
     if (attackerNation === state.player) {
-      logEvent('battle', '⚔', `我方在${t.name}击败了${dname}`);
+      logEvent('battle', '⚔', `We beat ${dname} at ${t.name}`);
     } else if (defenders[0].owner === state.player) {
-      logEvent('war', '💥', `${aname}在${t.name}击败了我方守军！`);
-      setHint(`⚠ ${aname}在${t.name}击败了我方！`, true);
+      logEvent('war', '💥', `${aname} crushed our defenders at ${t.name}!`);
+      setHint(`⚠ ${aname} crushed us at ${t.name}!`, true);
     } else {
-      logEvent('battle', '⚔', `${aname}在${t.name}击败了${dname}`);
+      logEvent('battle', '⚔', `${aname} beat ${dname} at ${t.name}`);
     }
     occupyTerritory(t, attackerNation);
   } else if (result.atkSurv.length === 0) {
     if (defenders[0].owner === state.player) {
-      logEvent('war', '🛡', `我方在${t.name}击退了${state.nations[attackerNation].name}的进攻！`);
-      setHint(`✓ 我方在${t.name}击退${state.nations[attackerNation].name}的进攻！`, true);
+      logEvent('war', '🛡', `We held ${t.name} against ${state.nations[attackerNation].name}!`);
+      setHint(`✓ We held ${t.name} vs ${state.nations[attackerNation].name}!`, true);
     } else {
-      logEvent('battle', '🛡', `${state.nations[attackerNation].name}进攻${t.name}失败`);
+      logEvent('battle', '🛡', `${state.nations[attackerNation].name}'s assault on ${t.name} failed`);
     }
   } else {
-    logEvent('battle', '⚔', `双方在${t.name}激战`);
+    logEvent('battle', '⚔', `Both sides battle at ${t.name}`);
   }
   return result;
 }
@@ -166,9 +166,9 @@ export function occupyTerritory(t, newOwner) {
   if (oldOwner && state.nations[oldOwner]) {
     state.nations[oldOwner].stability = Math.max(0, state.nations[oldOwner].stability - 6);
     if (t.isCapital) {
-      logEvent('war', '🏰', `${state.nations[newOwner].name}占领了${t.name}！`);
+      logEvent('war', '🏰', `${state.nations[newOwner].name} captured the capital ${t.name}!`);
     } else {
-      logEvent('war', '🏴', `${state.nations[newOwner].name}占领了${t.name}`);
+      logEvent('war', '🏴', `${state.nations[newOwner].name} captured ${t.name}`);
     }
   }
 }
@@ -176,10 +176,10 @@ export function occupyTerritory(t, newOwner) {
 function showEndScreen() {
   const winner = state.nations[state.winner];
   const youWon = state.winner === state.player;
-  const html = `<h2>${youWon ? '🏆 胜利！' : '💀 失败...'}</h2>
-    <p>${youWon ? '你统一了红线群岛。' : `${winner.name}主宰了群岛。`}</p>
-    <p>历经 ${state.turn} 个回合 · 第 ${state.year} 年。</p>
-    <button class="big-btn" onclick="location.reload()">再来一局</button>`;
+  const html = `<h2>${youWon ? '🏆 Victory!' : '💀 Defeat...'}</h2>
+    <p>${youWon ? 'You united the Red Line Islands.' : `${winner.name} rules the islands.`}</p>
+    <p>${state.turn} turns · Year ${state.year}.</p>
+    <button class="big-btn" onclick="location.reload()">Play again</button>`;
   document.getElementById('modal-content').innerHTML = html;
   document.getElementById('modal-mask').classList.remove('hidden');
 }

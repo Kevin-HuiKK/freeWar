@@ -102,7 +102,7 @@ async function aiMove(aiId) {
 
     // If AI is hitting the player, give a clear visual cue first
     if (willHitPlayer) {
-      setHint(`⚠ ${n.name} 正在向「${target.name}」推进！`, true);
+      setHint(`⚠ ${n.name} is moving on ${target.name}!`, true);
       setHighlight({ [best]: 'attack' });
       // animated arrow from source to target (in attacker color)
       spawnMoveArrow(u.location, best, n.color, 1100);

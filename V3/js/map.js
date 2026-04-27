@@ -97,6 +97,22 @@ function buildDefs() {
       <circle cx="20" cy="14" r="0.8" fill="#d8c098"/>
     </pattern>
 
+    <pattern id="t-fortress" patternUnits="userSpaceOnUse" width="48" height="48">
+      <rect width="48" height="48" fill="#7a5a3a"/>
+      <!-- castle wall blocks -->
+      <g fill="#a0805a" stroke="#3a2818" stroke-width="0.6">
+        <rect x="6"  y="22" width="14" height="14"/>
+        <rect x="20" y="20" width="14" height="16"/>
+        <rect x="6"  y="14" width="4"  height="8"/>
+        <rect x="14" y="14" width="4"  height="8"/>
+        <rect x="22" y="12" width="4"  height="8"/>
+        <rect x="30" y="12" width="4"  height="8"/>
+      </g>
+      <!-- flag -->
+      <line x1="40" y1="8" x2="40" y2="22" stroke="#3a2818" stroke-width="1.5"/>
+      <polygon points="40 8 46 11 40 14" fill="#e85a5a"/>
+    </pattern>
+
     <filter id="terrain-shadow" x="-10%" y="-10%" width="120%" height="120%">
       <feDropShadow dx="0" dy="3" stdDeviation="2.5" flood-opacity="0.5"/>
     </filter>

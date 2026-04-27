@@ -27,19 +27,19 @@ export function refreshSelectionPanel() {
     const selectedC = sel.uids.includes(u.uid) ? ' selected' : '';
     const movedC = u.moved ? ' moved' : '';
     const hpPct = Math.round(u.hp / u.maxHp * 100);
-    return `<div class="sel-unit-chip${selectedC}${movedC}" data-uid="${u.uid}" title="${d.name} HP ${u.hp}/${u.maxHp}${u.moved ? ' · 已移动' : ''}">
+    return `<div class="sel-unit-chip${selectedC}${movedC}" data-uid="${u.uid}" title="${d.name} HP ${u.hp}/${u.maxHp}${u.moved ? ' · moved' : ''}">
       <span class="sc-emoji">${d.icon}</span>
       <span class="sc-hp">${hpPct}%</span>
     </div>`;
   }).join('');
   panel.innerHTML = `
-    <div class="sel-title">选中: ${t?.name || ''} (${sel.uids.length}/${allHere.length})</div>
+    <div class="sel-title">${t?.name || ''} (${sel.uids.length}/${allHere.length} picked)</div>
     <div class="sel-chips">${chips}</div>
     <div class="sel-actions">
-      <button data-act="select-all">全选</button>
-      <button data-act="select-none">取消</button>
+      <button data-act="select-all">All</button>
+      <button data-act="select-none">None</button>
     </div>
-    <div class="sel-hint">点击单位 = 加入/移除选择 · 右键地图 = 下令</div>`;
+    <div class="sel-hint">Click chip = toggle · Right-click map = order</div>`;
   panel.classList.remove('hidden');
 }
 
@@ -99,7 +99,7 @@ function refreshDiploList() {
     const rel = state.diplomacy[me]?.[id] ?? 50;
     const war = isAtWar(me, id);
     const cls = war ? 'war' : (rel < 30 ? 'hostile' : rel >= 60 ? 'friendly' : 'neutral');
-    const label = war ? '宣战' : (rel < 30 ? `敌对(${rel})` : rel >= 60 ? `友好(${rel})` : `中立(${rel})`);
+    const label = war ? 'WAR' : (rel < 30 ? `Hostile(${rel})` : rel >= 60 ? `Friendly(${rel})` : `Neutral(${rel})`);
     const row = document.createElement('div');
     row.className = 'diplo-row';
     row.innerHTML = `<div class="swatch" style="background:${n.color}"></div>
@@ -117,11 +117,11 @@ function refreshSkillBar() {
     const cd = me.skillCD[s.id] || 0;
     const div = document.createElement('div');
     div.className = 'skill-icon' + (cd > 0 ? ' cooling' : '');
-    div.title = s.desc + (cd > 0 ? ` (冷却 ${cd}回合)` : '');
+    div.title = s.desc + (cd > 0 ? ` (CD ${cd} turns)` : '');
     div.dataset.skillId = s.id;
     div.innerHTML = `<div class="si-emoji">${s.icon}</div>
       <div class="si-name">${s.name}</div>
-      <div class="si-cd">${cd > 0 ? `冷却:${cd}回合` : `冷却:${s.cd}回合`}</div>`;
+      <div class="si-cd">${cd > 0 ? `CD:${cd}t` : `CD:${s.cd}t`}</div>`;
     bar.appendChild(div);
   });
 }
@@ -181,12 +181,12 @@ export function showTooltip(t, mouseX, mouseY) {
         return `<div class="ttl-row"><span style="color:${owner?.color || '#888'}">●</span>${d.icon}${d.name}<span style="color:${hpColor}">HP ${u.hp}/${u.maxHp}</span></div>`;
       }).join('') + '</div>'
     : '';
-  const warTag = nation && state.player !== t.owner && state.wars.has([state.player, t.owner].sort().join(':')) ? ' <span style="color:var(--red)">[交战中]</span>' : '';
+  const warTag = nation && state.player !== t.owner && state.wars.has([state.player, t.owner].sort().join(':')) ? ' <span style="color:var(--red)">[AT WAR]</span>' : '';
   tip.innerHTML = `<h4>${t.name}${t.isCapital ? ' ♛' : ''}</h4>
-    <div class="ttl-row"><span>归属</span><span style="color:${nation?.color}">${nation?.name || '无主'}${warTag}</span></div>
-    <div class="ttl-row"><span>地形</span><span>${terr.name}</span></div>
+    <div class="ttl-row"><span>Owner</span><span style="color:${nation?.color}">${nation?.name || 'Unclaimed'}${warTag}</span></div>
+    <div class="ttl-row"><span>Terrain</span><span>${terr.name}</span></div>
     ${usHtml}
-    <div class="tooltip-help">左键选择/移动 · 右键取消</div>`;
+    <div class="tooltip-help">Left = pick · Right = order</div>`;
   tip.classList.remove('hidden');
   const sv = document.getElementById('map-svg');
   const rect = sv.getBoundingClientRect();
@@ -229,7 +229,7 @@ export function setAITurnBanner(nationId) {
     <div class="ai-banner-flag" style="background:${n.color}">${n.icon || '⚔'}</div>
     <div class="ai-banner-body">
       <div class="ai-banner-name" style="color:${n.color}">${n.name}</div>
-      <div class="ai-banner-sub">回合行动中…</div>
+      <div class="ai-banner-sub">taking their turn…</div>
     </div>`;
 }
 

@@ -1,11 +1,12 @@
 {
-  "_note": "Terrain visual + combat modifiers.",
+  "_note": "Terrain visual + combat modifiers. Fortress = natural strongpoint with heavy DEF.",
   "terrains": {
-    "plain":    { "name": "平原", "color": "#cfd58a", "atkMod": 1.0,  "defMod": 1.0,  "movCost": 1 },
-    "forest":   { "name": "森林", "color": "#5a8c4a", "atkMod": 0.9,  "defMod": 1.2,  "movCost": 1 },
-    "mountain": { "name": "山地", "color": "#a08868", "atkMod": 0.85, "defMod": 1.4,  "movCost": 2 },
-    "desert":   { "name": "沙漠", "color": "#e8c878", "atkMod": 1.0,  "defMod": 0.9,  "movCost": 1 },
-    "coast":    { "name": "海岸", "color": "#9cc8b0", "atkMod": 1.0,  "defMod": 1.05, "movCost": 1 },
-    "sea":      { "name": "海洋", "color": "#3a6890", "atkMod": 1.0,  "defMod": 1.0,  "movCost": 1, "naval": true }
+    "plain":    { "name": "Plain",    "color": "#cfd58a", "atkMod": 1.0,  "defMod": 1.0,  "movCost": 1 },
+    "forest":   { "name": "Forest",   "color": "#5a8c4a", "atkMod": 0.9,  "defMod": 1.2,  "movCost": 1 },
+    "mountain": { "name": "Mountain", "color": "#a08868", "atkMod": 0.85, "defMod": 1.4,  "movCost": 2 },
+    "desert":   { "name": "Desert",   "color": "#e8c878", "atkMod": 1.0,  "defMod": 0.9,  "movCost": 1 },
+    "coast":    { "name": "Coast",    "color": "#9cc8b0", "atkMod": 1.0,  "defMod": 1.05, "movCost": 1 },
+    "fortress": { "name": "Fortress", "color": "#7a5a3a", "atkMod": 0.85, "defMod": 1.6,  "movCost": 2 },
+    "sea":      { "name": "Sea",      "color": "#3a6890", "atkMod": 1.0,  "defMod": 1.0,  "movCost": 1, "naval": true }
   }
 }

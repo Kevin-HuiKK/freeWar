@@ -36,9 +36,9 @@ const DIFFICULTY_PRESETS = {
 };
 export function difficultyPreset() { return DIFFICULTY_PRESETS[state.difficulty] || DIFFICULTY_PRESETS.normal; }
 
-const SEASONS = ['春季', '夏季', '秋季', '冬季'];
+const SEASONS = ['Spring', 'Summer', 'Autumn', 'Winter'];
 export const seasonName = () => SEASONS[state.season];
-export const yearLabel = () => `第 ${state.year} 年 ${seasonName()}`;
+export const yearLabel = () => `Year ${state.year} ${seasonName()}`;
 
 export function nextUid() { return state.uidCounter++; }
 
@@ -64,14 +64,14 @@ export async function loadAll() {
   state.mapMeta = { width: map.width, height: map.height };
   state.territories = map.territories.map(t => ({ ...t }));
   state.territoriesById = {};
-  state.territories.forEach(t => { state.territoriesById[t.id] = t; });
+  state.mapDefaultOwners = {};
+  state.territories.forEach(t => { state.territoriesById[t.id] = t; state.mapDefaultOwners[t.id] = t.owner; });
   state.nationDefs = nations.nations;
   state.techDefs = techs.techs;
   state.skillDefs = skills.skills;
   state.eventDefs = events.events;
   state.terrainDefs = terrain.terrains;
   state._initialDiplomacy = nations._initialDiplomacy;
-  state._initialWars = nations._initialWars;
 }
 
 export function initRuntime() {
@@ -79,7 +79,7 @@ export function initRuntime() {
   const preset = difficultyPreset();
   state.nations = {};
   state.nationDefs.forEach(n => {
-    const isP = !!n.isPlayer;
+    const isP = (n.id === state.player);
     const startG = isP ? preset.playerStartGold : Math.round(n.startResources.gold * preset.aiResMul);
     state.nations[n.id] = {
       id: n.id,
@@ -110,6 +110,19 @@ export function initRuntime() {
   Object.keys(state._initialDiplomacy).forEach(a => {
     state.diplomacy[a] = { ...state._initialDiplomacy[a] };
   });
+  // Wars: compute from diplomacy — anyone at relation < 30 starts the game at war
   state.wars = new Set();
-  (state._initialWars || []).forEach(([a, b]) => state.wars.add(warKey(a, b)));
+  const ids = Object.keys(state.nations);
+  for (let i = 0; i < ids.length; i++) {
+    for (let j = i + 1; j < ids.length; j++) {
+      const a = ids[i], b = ids[j];
+      const rel = state.diplomacy[a]?.[b] ?? 50;
+      if (rel < 30) state.wars.add(warKey(a, b));
+    }
+  }
+  // Reset territory ownership to whatever map.json says (in case of restart)
+  state.territories.forEach(t => {
+    const orig = state.mapDefaultOwners?.[t.id];
+    if (orig) t.owner = orig;
+  });
 }

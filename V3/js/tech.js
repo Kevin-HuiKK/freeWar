@@ -32,7 +32,7 @@ export function completeResearch(nationId, techId) {
   n.researching = null;
   n.techProgress = 0;
   if (nationId === state.player) {
-    logEvent('tech', '🧪', `我方科技研究完成: ${t.name}`);
+    logEvent('tech', '🧪', `Research complete: ${t.name}`);
   }
 }
 

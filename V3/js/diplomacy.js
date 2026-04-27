@@ -18,19 +18,18 @@ function clamp(x) { return Math.max(0, Math.min(100, x)); }
 export function diploActionDeclareWar(initiator, target) {
   declareWar(initiator, target);
   if (initiator === state.player) {
-    logEvent('war', '⚔', `我方向${state.nations[target].name}宣战！`);
+    logEvent('war', '⚔', `We declared war on ${state.nations[target].name}!`);
   } else if (target === state.player) {
-    logEvent('war', '⚔', `${state.nations[initiator].name}向我方宣战！`);
+    logEvent('war', '⚔', `${state.nations[initiator].name} declared war on us!`);
   }
 }
 
 export function diploActionPeace(a, b) {
   if (!isAtWar(a, b)) return false;
-  // peace requires both willing — if AI low on stability/army, accept
   makePeace(a, b);
   if (a === state.player || b === state.player) {
     const other = a === state.player ? b : a;
-    logEvent('diplo', '🕊', `与${state.nations[other].name}缔结和平`);
+    logEvent('diplo', '🕊', `Peace with ${state.nations[other].name}`);
   }
   return true;
 }
@@ -41,7 +40,7 @@ export function diploActionGift(a, b, amount) {
   an.gold -= amount;
   bn.gold += amount;
   adjustRelation(a, b, Math.min(20, Math.floor(amount / 20)));
-  if (a === state.player) logEvent('diplo', '💰', `送礼 ${amount} 金币给${bn.name}`);
+  if (a === state.player) logEvent('diplo', '💰', `Gifted ${amount} gold to ${bn.name}`);
   return true;
 }
 
@@ -59,7 +58,7 @@ export function aiDiploTick(aiId) {
       const enemyArmy = nationStrength(otherId);
       if (myArmy < enemyArmy * 0.5 && me.stability < 50) {
         makePeace(aiId, otherId);
-        if (otherId === state.player) logEvent('diplo', '🕊', `${me.name}向我方求和`);
+        if (otherId === state.player) logEvent('diplo', '🕊', `${me.name} sues for peace with us`);
       }
       continue;
     }
@@ -69,8 +68,8 @@ export function aiDiploTick(aiId) {
       const enemyArmy = nationStrength(otherId);
       if (myArmy > enemyArmy * 1.3 && Math.random() < 0.3) {
         declareWar(aiId, otherId);
-        if (otherId === state.player) logEvent('war', '⚔', `${me.name}向我方宣战！`);
-        else if (state.player !== aiId) logEvent('war', '⚔', `${me.name}向${other.name}宣战`);
+        if (otherId === state.player) logEvent('war', '⚔', `${me.name} declared war on us!`);
+        else if (state.player !== aiId) logEvent('war', '⚔', `${me.name} declared war on ${other.name}`);
       }
     }
     // Friendly drift toward neutral over time
