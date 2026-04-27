@@ -1,0 +1,17 @@
+{
+  "_note": "6 national skills with cooldown (turns).",
+  "skills": [
+    { "id": "S_DRAFT",    "name": "征兵令",   "icon": "🪖", "cd": 3, "desc": "立即在首都生成 2 个民兵",
+      "effect": { "type": "spawn", "unit": "U001", "count": 2, "where": "capital" } },
+    { "id": "S_ECONOMY",  "name": "经济振兴", "icon": "💰", "cd": 4, "desc": "立即获得 100 金币",
+      "effect": { "type": "resource", "gold": 100 } },
+    { "id": "S_FARM",     "name": "农业改革", "icon": "🌾", "cd": 3, "desc": "立即获得 80 粮食 + 稳定+5",
+      "effect": { "type": "resource", "food": 80, "stability": 5 } },
+    { "id": "S_DEFENSE",  "name": "坚固防御", "icon": "🛡", "cd": 2, "desc": "本回合所有己方单位 DEF +5",
+      "effect": { "type": "buff", "stat": "def", "amount": 5, "duration": 1 } },
+    { "id": "S_MOBILIZE", "name": "军事动员", "icon": "⚔", "cd": 3, "desc": "本回合所有己方单位 ATK +5、MOV +1",
+      "effect": { "type": "buff", "stat": "atk", "amount": 5, "movBonus": 1, "duration": 1 } },
+    { "id": "S_DIPLOMACY","name": "外交斡旋", "icon": "🤝", "cd": 4, "desc": "对所有非交战国关系 +10",
+      "effect": { "type": "diplomacy", "amount": 10 } }
+  ]
+}

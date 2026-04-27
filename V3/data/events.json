@@ -1,0 +1,17 @@
+{
+  "_note": "Random events drawn each turn. weight = relative probability. effects target 'self'(player) or 'random' nation.",
+  "events": [
+    { "id": "E_DROUGHT",   "name": "旱灾",         "icon": "☀",  "weight": 6, "target": "random", "desc": "{nation}发生旱灾",         "effect": { "food": -40, "stability": -5 } },
+    { "id": "E_HARVEST",   "name": "丰收",         "icon": "🌾", "weight": 6, "target": "random", "desc": "{nation}迎来丰收",         "effect": { "food": 50, "stability": 3 } },
+    { "id": "E_GOLD_VEIN", "name": "金脉",         "icon": "💰", "weight": 4, "target": "random", "desc": "{nation}发现金矿脉",       "effect": { "gold": 60 } },
+    { "id": "E_OIL_FIND",  "name": "油田",         "icon": "🛢", "weight": 4, "target": "random", "desc": "{nation}勘探到新油田",     "effect": { "oil": 40 } },
+    { "id": "E_REBELLION", "name": "民变",         "icon": "💀", "weight": 5, "target": "random", "desc": "{nation}爆发民变",         "effect": { "stability": -15 }, "spawnRebels": 1 },
+    { "id": "E_INVENT",    "name": "灵感",         "icon": "💡", "weight": 4, "target": "random", "desc": "{nation}研究取得突破",     "effect": { "tech": 20 } },
+    { "id": "E_PLAGUE",    "name": "瘟疫",         "icon": "☣",  "weight": 3, "target": "random", "desc": "{nation}爆发瘟疫",         "effect": { "stability": -10, "food": -20 } },
+    { "id": "E_FESTIVAL",  "name": "庆典",         "icon": "🎉", "weight": 5, "target": "random", "desc": "{nation}举办庆典",         "effect": { "stability": 8 } },
+    { "id": "E_PIRATE",    "name": "海盗袭扰",     "icon": "🏴",  "weight": 3, "target": "random", "desc": "{nation}沿海遭海盗袭击",   "effect": { "gold": -30 } },
+    { "id": "E_TRADE",     "name": "贸易繁荣",     "icon": "📈", "weight": 4, "target": "random", "desc": "{nation}贸易繁荣",         "effect": { "gold": 50, "food": 20 } },
+    { "id": "E_TECH_LEAK", "name": "科技泄密",     "icon": "📡", "weight": 2, "target": "random", "desc": "{nation}科技被窃取",       "effect": { "tech": -15 } },
+    { "id": "E_RECRUIT",   "name": "义勇兵",       "icon": "🪖", "weight": 4, "target": "self",   "desc": "我方招募到义勇兵",         "effect": {}, "spawnUnit": "U001" }
+  ]
+}

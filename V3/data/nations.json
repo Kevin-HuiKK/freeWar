@@ -1,0 +1,75 @@
+{
+  "nations": [
+    {
+      "id": "blue",
+      "name": "蓝海联邦",
+      "color": "#3a78ff",
+      "colorLight": "#7ba4ff",
+      "isPlayer": true,
+      "capital": "T01",
+      "startResources": { "gold": 200, "food": 100, "oil": 50, "tech": 0 },
+      "stability": 72,
+      "rank": 2,
+      "icon": "👑"
+    },
+    {
+      "id": "green",
+      "name": "绿原帝国",
+      "color": "#3aaa3a",
+      "colorLight": "#6cd06c",
+      "isPlayer": false,
+      "capital": "T11",
+      "startResources": { "gold": 250, "food": 140, "oil": 40, "tech": 0 },
+      "stability": 80,
+      "rank": 1,
+      "icon": "👑"
+    },
+    {
+      "id": "red",
+      "name": "红焰共和国",
+      "color": "#d73a3a",
+      "colorLight": "#ff6c6c",
+      "isPlayer": false,
+      "capital": "T23",
+      "startResources": { "gold": 220, "food": 100, "oil": 80, "tech": 0 },
+      "stability": 65,
+      "rank": 3,
+      "icon": "🔥",
+      "aggression": 0.8
+    },
+    {
+      "id": "yellow",
+      "name": "黄沙王国",
+      "color": "#d8a528",
+      "colorLight": "#ffd060",
+      "isPlayer": false,
+      "capital": "T17",
+      "startResources": { "gold": 180, "food": 80, "oil": 100, "tech": 0 },
+      "stability": 60,
+      "rank": 4,
+      "icon": "🛡"
+    },
+    {
+      "id": "teal",
+      "name": "青林部落",
+      "color": "#28a890",
+      "colorLight": "#6cd0bc",
+      "isPlayer": false,
+      "capital": "T07",
+      "startResources": { "gold": 150, "food": 120, "oil": 20, "tech": 0 },
+      "stability": 75,
+      "rank": 5,
+      "icon": "🌲",
+      "aggression": 0.3
+    }
+  ],
+  "_initialDiplomacy": {
+    "_note": "Pairwise relation 0-100. <30=hostile, 30-60=neutral, >60=friendly.",
+    "blue":   { "green": 85, "red": 20, "yellow": 50, "teal": 65 },
+    "green":  { "blue": 85, "red": 30, "yellow": 45, "teal": 70 },
+    "red":    { "blue": 20, "green": 30, "yellow": 40, "teal": 25 },
+    "yellow": { "blue": 50, "green": 45, "red": 40, "teal": 55 },
+    "teal":   { "blue": 65, "green": 70, "red": 25, "yellow": 55 }
+  },
+  "_initialWars": [["blue","red"], ["blue","yellow"], ["green","red"]]
+}

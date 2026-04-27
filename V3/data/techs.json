@@ -1,0 +1,15 @@
+{
+  "_note": "8 techs. cost = tech points needed. unlocks = unit ids that become available.",
+  "techs": [
+    { "id": "T_INFANTRY", "name": "步兵改良",   "cost": 30, "icon": "🪖", "desc": "解锁 Lv2 民兵 + 标准步兵",         "unlocks": ["U001", "U002"] },
+    { "id": "T_ENGINEER", "name": "工程学",     "cost": 40, "icon": "🔧", "desc": "解锁 Lv2 工兵；城市修复+5",      "unlocks": ["U006"], "buff": { "cityRepair": 5 } },
+    { "id": "T_ARMOR",    "name": "装甲学",     "cost": 60, "icon": "🛡", "desc": "解锁 Lv2 轻型/中型坦克",         "unlocks": ["U011", "U012"] },
+    { "id": "T_ROCKET",   "name": "火箭工程",   "cost": 80, "icon": "🚀", "desc": "解锁 Lv2 火箭坦克",              "unlocks": ["U015"] },
+    { "id": "T_AVIATION", "name": "航空学",     "cost": 70, "icon": "✈",  "desc": "解锁 Lv2 战斗机/轰炸机",         "unlocks": ["U021", "U022"] },
+    { "id": "T_RECON",    "name": "侦察",       "cost": 35, "icon": "🛸", "desc": "解锁 Lv2 侦察机；显示敌方红线",   "unlocks": ["U023"] },
+    { "id": "T_NAVY",     "name": "海军学院",   "cost": 50, "icon": "⚓", "desc": "解锁 Lv2 巡逻艇/驱逐舰",         "unlocks": ["U031", "U033"] },
+    { "id": "T_AMPHIB",   "name": "两栖作战",   "cost": 60, "icon": "⛴", "desc": "解锁 Lv2 登陆舰",                 "unlocks": ["U039"] },
+    { "id": "T_DEFENSE",  "name": "国土防御",   "cost": 45, "icon": "🗼", "desc": "解锁 Lv2 防空塔；城市防御+1",    "unlocks": ["U047"], "buff": { "cityDef": 1 } },
+    { "id": "T_NUKE",     "name": "核武计划",   "cost": 200,"icon": "☢", "desc": "解锁核导弹；其他国家稳定-5",     "unlocks": ["U041"] }
+  ]
+}

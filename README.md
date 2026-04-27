@@ -7,6 +7,7 @@
 - **v1 经典**（塔防 · 冰山难度）：<https://kevin-huikk.github.io/freeWar/>
 - **v2.0 双方对攻**（夺旗 · 工业废墟）：<https://kevin-huikk.github.io/freeWar/v2/>
 - **🎰 刮彩票**（le'o 设计 · 3 张卡 + 升级 + 矿石）：<https://kevin-huikk.github.io/freeWar/gambling/scratch-lottery/>
+- **🌊 V3 红线群岛战争**（回合制策略 · 5 国 · 15 兵种 · 外交+科技）：<https://kevin-huikk.github.io/freeWar/V3/>
 
 （任何浏览器打开即玩，手机 / 平板 / 电脑都行）
 

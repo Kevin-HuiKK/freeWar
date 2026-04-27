@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>红线群岛战争 · freeWar V3</title>
+  <meta name="viewport" content="width=1280" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <nav class="mockup-nav">
+    <span class="nav-tag">FREEWAR</span>
+    <a href="../index.html">v1 经典</a>
+    <a href="../v2/index.html">v2 双方对攻</a>
+    <a href="../gambling/scratch-lottery/index.html">刮彩票</a>
+    <a href="index.html" class="active">V3 红线群岛</a>
+  </nav>
+
+  <main id="app">
+    <!-- 顶栏 HUD -->
+    <header id="topbar">
+      <button class="icon-btn" id="btn-menu" title="菜单">⚙</button>
+      <div class="topbar-cell year"><span id="hud-year">第 1 年 春季</span></div>
+      <div class="topbar-cell res gold">🟡 <span id="hud-gold">0</span><span class="delta" id="hud-gold-d"></span></div>
+      <div class="topbar-cell res food">🌾 <span id="hud-food">0</span><span class="delta" id="hud-food-d"></span></div>
+      <div class="topbar-cell res pop">👥 <span id="hud-pop">0</span></div>
+      <div class="topbar-cell res tech">🧪 <span id="hud-tech">0</span></div>
+      <div class="topbar-cell stab">稳定度 <span id="hud-stab">0%</span> <div class="stab-bar"><div id="hud-stab-fill"></div></div></div>
+      <div class="topbar-cell oil">🛢 <span id="hud-oil">0</span></div>
+      <div class="topbar-cell turn-info">回合: <b id="hud-turn">1</b></div>
+      <button class="topbar-menu" id="btn-topmenu">菜单</button>
+    </header>
+
+    <div id="layout">
+      <!-- 左栏：国家面板 + 外交 -->
+      <aside id="left-panel">
+        <div class="panel-block nation-card" id="nation-card">
+          <div class="crown" id="nation-icon">👑</div>
+          <div class="nation-name" id="nation-name">蓝海联邦</div>
+          <div class="nation-meta">国力排名: <b id="nation-rank">2</b></div>
+          <div class="nation-meta">领土: <b id="nation-territories">6</b> 块</div>
+        </div>
+        <div class="panel-block stats-block">
+          <div class="stat-row"><span>人口</span><b id="stat-pop">0</b></div>
+          <div class="stat-row"><span>经济</span><b id="stat-econ">0</b></div>
+          <div class="stat-row"><span>军力</span><b id="stat-army">0</b></div>
+          <div class="stat-row"><span>科技</span><b id="stat-tech">0</b></div>
+          <div class="stat-row"><span>稳定度</span><b id="stat-stab">0%</b></div>
+        </div>
+        <div class="panel-block">
+          <div class="panel-title">外交关系</div>
+          <div id="diplo-list"></div>
+          <button class="big-btn" id="btn-diplo">外交</button>
+          <button class="big-btn" id="btn-tech">科技</button>
+        </div>
+      </aside>
+
+      <!-- 中央：地图 -->
+      <section id="map-area">
+        <svg id="map-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+          <defs></defs>
+        </svg>
+        <div id="tooltip" class="hidden"></div>
+        <div id="action-bar" class="hidden">
+          <span id="action-info"></span>
+          <button id="act-build" class="act-btn">造兵</button>
+          <button id="act-cancel" class="act-btn ghost">取消</button>
+        </div>
+        <div id="hint-bar"></div>
+      </section>
+
+      <!-- 右栏：事件日志 + 小地图 -->
+      <aside id="right-panel">
+        <div class="panel-block">
+          <div class="panel-title">事件日志</div>
+          <div id="event-list"></div>
+          <button class="big-btn ghost" id="btn-events">查看全部事件</button>
+        </div>
+        <div class="panel-block minimap-block">
+          <canvas id="minimap" width="200" height="120"></canvas>
+        </div>
+        <button id="btn-end-turn">结束回合</button>
+      </aside>
+    </div>
+
+    <!-- 底栏：国家技能 -->
+    <footer id="bottombar">
+      <div class="skill-title">国家技能</div>
+      <div id="skill-bar"></div>
+      <div id="combat-log"></div>
+    </footer>
+
+    <!-- 弹窗占位 -->
+    <div id="modal-mask" class="hidden">
+      <div id="modal-box">
+        <button id="modal-close">×</button>
+        <div id="modal-content"></div>
+      </div>
+    </div>
+
+    <!-- 主菜单 -->
+    <div id="main-menu">
+      <h1>🌊 红线群岛战争</h1>
+      <p class="subtitle">le'o 设计 · freeWar V3 · 回合制策略</p>
+
+      <div class="diff-row">
+        <button class="diff-btn" data-diff="easy">🐣 菜鸟</button>
+        <button class="diff-btn selected" data-diff="normal">⚔ 正常</button>
+        <button class="diff-btn" data-diff="hard">🔥 老手</button>
+      </div>
+      <div id="diff-desc" class="diff-desc">AI 资源 ×1.0、AI 攻击性 ×1.0、玩家起始金币 200</div>
+
+      <button id="btn-new-game" class="menu-btn primary">新游戏 · 蓝海联邦</button>
+      <button id="btn-load-game" class="menu-btn">继续上次</button>
+      <button id="btn-mute" class="menu-btn ghost">🔇 音效</button>
+      <p class="hint">
+        左键选单位 → 高亮领土：🟢 移动 / 🔴 进攻 / 🟡 占领 / ⚪ 不可入<br/>
+        右键 = 取消选择 / 切换单位 · ESC = 取消 · Enter = 结束回合 · 按住空格 = AI 回合 ×4 加速<br/>
+        胜利：占领所有敌方首都
+      </p>
+    </div>
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
