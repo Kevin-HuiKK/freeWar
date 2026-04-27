@@ -319,13 +319,17 @@ export function setHighlight(idsOrMap) {
 function applySelectedClass() {
   if (!layers.territories) return;
   layers.territories.querySelectorAll('.territory').forEach(g => g.classList.remove('selected'));
+  layers.units && layers.units.querySelectorAll('.unit-stack').forEach(g => g.classList.remove('group-selected'));
   if (!state.selected) return;
-  const tid = state.selected.type === 'territory'
-    ? state.selected.id
-    : state.units.find(u => u.uid === state.selected.id)?.location;
+  const tid = state.selected.tid;
   if (!tid) return;
   const tEl = layers.territories.querySelector(`[data-id="${tid}"]`);
   if (tEl) tEl.classList.add('selected');
+  // Mark the unit-stack as group-selected
+  if (state.selected.type === 'group' && state.selected.uids?.length) {
+    const sEl = layers.units?.querySelector(`.unit-stack[data-tid="${tid}"][data-uid]`);
+    if (sEl) sEl.classList.add('group-selected');
+  }
 }
 
 // Refresh after any state change
@@ -382,10 +386,18 @@ function bindEvents() {
     const g = e.target.closest('.unit-stack');
     if (!g) return;
     e.stopPropagation();
-    const u = state.units.find(x => x.uid === +g.dataset.uid);
-    if (!u) return;
-    const t = state.territoriesById[u.location];
+    const tid = g.dataset.tid || (state.units.find(x => x.uid === +g.dataset.uid)?.location);
+    const t = state.territoriesById[tid];
     if (t && handlers.onClick) handlers.onClick(t, e);
+  });
+  layers.units.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const g = e.target.closest('.unit-stack');
+    if (!g) { if (handlers.onRightClick) handlers.onRightClick(null, e); return; }
+    e.stopPropagation();
+    const tid = g.dataset.tid || (state.units.find(x => x.uid === +g.dataset.uid)?.location);
+    const t = state.territoriesById[tid];
+    if (handlers.onRightClick) handlers.onRightClick(t, e);
   });
   svg.addEventListener('mousemove', e => {
     const g = e.target.closest('.territory') || e.target.closest('.unit-stack');

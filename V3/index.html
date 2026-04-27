@@ -62,10 +62,11 @@
         <div id="tooltip" class="hidden"></div>
         <div id="action-bar" class="hidden">
           <span id="action-info"></span>
-          <button id="act-build" class="act-btn">造兵</button>
-          <button id="act-cancel" class="act-btn ghost">取消</button>
+          <button id="act-build" class="act-btn">造兵 (B)</button>
+          <button id="act-cancel" class="act-btn ghost">取消 (ESC)</button>
         </div>
         <div id="hint-bar"></div>
+        <div id="selection-panel" class="hidden"></div>
       </section>
 
       <!-- 右栏：事件日志 + 小地图 -->
@@ -113,8 +114,10 @@
       <button id="btn-load-game" class="menu-btn">继续上次</button>
       <button id="btn-mute" class="menu-btn ghost">🔇 音效</button>
       <p class="hint">
-        左键选单位 → 高亮领土：🟢 移动 / 🔴 进攻 / 🟡 占领 / ⚪ 不可入<br/>
-        右键 = 取消选择 / 切换单位 · ESC = 取消 · Enter = 结束回合 · 按住空格 = AI 回合 ×4 加速<br/>
+        <b>左键</b> 我方领土 = 选中该领土所有未动单位<br/>
+        <b>右键</b> 目标领土 = 下令（🟢 移动 / 🔴 进攻 / 🟡 占领 / ⚪ 不可入）<br/>
+        左下角面板可点击单独勾选/取消单个士兵 · 造兵可批量加 +/−<br/>
+        ESC = 取消 · Enter = 结束回合 · B = 造兵 · 按住空格 = AI ×4 加速<br/>
         胜利：占领所有敌方首都
       </p>
     </div>

@@ -9,6 +9,38 @@ export function refreshAll() {
   refreshSkillBar();
   refreshEventLog();
   refreshCombatLog();
+  refreshSelectionPanel();
+}
+
+export function refreshSelectionPanel() {
+  const panel = document.getElementById('selection-panel');
+  if (!panel) return;
+  const sel = state.selected;
+  if (!sel || sel.type !== 'group' || !sel.uids?.length) {
+    panel.classList.add('hidden');
+    return;
+  }
+  const t = state.territoriesById[sel.tid];
+  const allHere = t ? state.units.filter(u => u.location === t.id && u.owner === state.player && u.buildTurnsLeft === 0) : [];
+  const chips = allHere.map(u => {
+    const d = getDef(u);
+    const selectedC = sel.uids.includes(u.uid) ? ' selected' : '';
+    const movedC = u.moved ? ' moved' : '';
+    const hpPct = Math.round(u.hp / u.maxHp * 100);
+    return `<div class="sel-unit-chip${selectedC}${movedC}" data-uid="${u.uid}" title="${d.name} HP ${u.hp}/${u.maxHp}${u.moved ? ' · 已移动' : ''}">
+      <span class="sc-emoji">${d.icon}</span>
+      <span class="sc-hp">${hpPct}%</span>
+    </div>`;
+  }).join('');
+  panel.innerHTML = `
+    <div class="sel-title">选中: ${t?.name || ''} (${sel.uids.length}/${allHere.length})</div>
+    <div class="sel-chips">${chips}</div>
+    <div class="sel-actions">
+      <button data-act="select-all">全选</button>
+      <button data-act="select-none">取消</button>
+    </div>
+    <div class="sel-hint">点击单位 = 加入/移除选择 · 右键地图 = 下令</div>`;
+  panel.classList.remove('hidden');
 }
 
 export function refreshTopbar() {
