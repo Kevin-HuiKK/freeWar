@@ -1,4 +1,5 @@
 import {
+  ACTIONS_PER_TURN,
   CITY_DEFS,
   CITY_TYPES,
   FACTIONS,
@@ -67,6 +68,7 @@ export function createNewGame() {
   return {
     turn: 1,
     phase: 'player',
+    actionsRemaining: ACTIONS_PER_TURN,
     selected: { kind: 'city', id: FACTIONS.player.capitalId },
     hover: null,
     winner: null,
@@ -128,6 +130,16 @@ export function addLog(state, message) {
   if (state.log.length > 80) state.log = state.log.slice(-80);
 }
 
+export function resetActions(state) {
+  state.actionsRemaining = ACTIONS_PER_TURN;
+}
+
+export function consumeAction(state) {
+  if ((state.actionsRemaining || 0) <= 0) return false;
+  state.actionsRemaining -= 1;
+  return true;
+}
+
 export function spendResources(faction, cost) {
   for (const [key, value] of Object.entries(cost)) {
     if ((faction.resources[key] || 0) < value) return false;
@@ -165,4 +177,11 @@ export function transferAllUnits(from, to) {
     to[unitId] = (to[unitId] || 0) + (from[unitId] || 0);
     from[unitId] = 0;
   }
+}
+
+export function resourceCities(state, factionId = null) {
+  return Object.values(state.cities).filter(city => {
+    const resource = city.type === 'resource' || city.tags?.includes('resource') || city.tags?.includes('trade') || city.tags?.includes('port');
+    return resource && (!factionId || city.owner === factionId);
+  });
 }

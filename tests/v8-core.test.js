@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { createNewGame, cityById } from '../v8/src/core/game-state.js';
+import { consumeAction, createNewGame, cityById, resetActions, resourceCities } from '../v8/src/core/game-state.js';
 import { buildRoute } from '../v8/src/systems/route-system.js';
 import { calculateIncome } from '../v8/src/systems/economy-system.js';
 import { applyCityGrowth } from '../v8/src/systems/growth-system.js';
-import { attackCity, trainUnit } from '../v8/src/systems/combat-system.js';
+import { attackCity, checkVictory, trainUnit } from '../v8/src/systems/combat-system.js';
 
 describe('v8 city network core', () => {
   it('starts with three living factions and initial networks', () => {
@@ -11,6 +11,17 @@ describe('v8 city network core', () => {
     expect(Object.values(state.factions).filter(f => f.alive)).toHaveLength(3);
     expect(cityById(state, 'c_aurea').owner).toBe('player');
     expect(Object.keys(state.routes).length).toBeGreaterThan(5);
+    expect(state.actionsRemaining).toBe(2);
+    expect(resourceCities(state, 'player').length).toBeGreaterThan(0);
+  });
+
+  it('tracks two player actions per turn', () => {
+    const state = createNewGame();
+    expect(consumeAction(state)).toBe(true);
+    expect(consumeAction(state)).toBe(true);
+    expect(consumeAction(state)).toBe(false);
+    resetActions(state);
+    expect(state.actionsRemaining).toBe(2);
   });
 
   it('builds a route to a neutral city and annexes it', () => {
@@ -26,6 +37,12 @@ describe('v8 city network core', () => {
     buildRoute(state, 'player', 'c_aurea', 'c_ashbridge');
     const after = calculateIncome(state, 'player').gold;
     expect(after).toBeGreaterThan(base);
+  });
+
+  it('can win by influence target', () => {
+    const state = createNewGame();
+    state.factions.player.resources.influence = 20;
+    expect(checkVictory(state)).toBe('player');
   });
 
   it('applies city growth without crashing and can upgrade cities over time', () => {

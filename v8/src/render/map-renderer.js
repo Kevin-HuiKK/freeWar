@@ -183,9 +183,25 @@ function drawRoutes(ctx, state, timeMs) {
     ctx.quadraticCurveTo(midX, midY, b.x, b.y);
     ctx.stroke();
     ctx.setLineDash([]);
+    drawRouteJoint(ctx, a, b, route);
     if (route.trade && route.status === 'active') drawTradeDot(ctx, a, b, route, timeMs);
     ctx.restore();
   }
+}
+
+function drawRouteJoint(ctx, a, b, route) {
+  const t = 0.5;
+  const cx = (a.x + b.x) / 2;
+  const cy = (a.y + b.y) / 2 - (route.kind === 'sea' ? 70 : 0);
+  const x = quad(a.x, cx, b.x, t);
+  const y = quad(a.y, cy, b.y, t);
+  ctx.fillStyle = '#f3d45f';
+  ctx.strokeStyle = '#5b3b17';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x, y, 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
 }
 
 function drawTradeDot(ctx, a, b, route, timeMs) {
@@ -218,8 +234,7 @@ function drawCities(ctx, state) {
     ctx.strokeStyle = owner ? owner.dark : '#6e5a42';
     ctx.lineWidth = city.type === 'capital' ? 5 : 3;
     ctx.beginPath();
-    if (city.type === 'capital') drawStarPath(ctx, 0, 0, r + 7, r * 0.48, 5);
-    else ctx.arc(0, 0, r, 0, Math.PI * 2);
+    drawCityShape(ctx, city, r);
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = '#2b2118';
@@ -275,9 +290,30 @@ function cityIcon(city) {
   if (city.type === 'capital') return '★';
   if (city.tags.includes('port')) return '⚓';
   if (city.tags.includes('barracks')) return '⚔';
-  if (city.tags.includes('trade')) return '◆';
+  if (city.type === 'resource' || city.tags.includes('resource') || city.tags.includes('trade')) return '◆';
   if (city.type === 'fortress') return '■';
   return '●';
+}
+
+function drawCityShape(ctx, city, r) {
+  if (city.type === 'capital') {
+    drawStarPath(ctx, 0, 0, r + 7, r * 0.48, 5);
+    return;
+  }
+  if (city.type === 'fortress') {
+    const s = r * 1.55;
+    ctx.rect(-s / 2, -s / 2, s, s);
+    return;
+  }
+  if (city.type === 'resource' || city.tags.includes('resource') || city.tags.includes('trade')) {
+    ctx.moveTo(0, -r);
+    ctx.lineTo(r, 0);
+    ctx.lineTo(0, r);
+    ctx.lineTo(-r, 0);
+    ctx.closePath();
+    return;
+  }
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
 }
 
 function pointToSegmentDistance(px, py, x1, y1, x2, y2) {

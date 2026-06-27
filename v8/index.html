@@ -3,38 +3,122 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FreeWar V8 · 城市网络战争</title>
+  <title>FreeWar V8 · 机制总览地图</title>
   <link rel="icon" href="data:," />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="game-shell">
-    <header class="topbar">
-      <div class="brand">
-        <span>FREEWAR V8</span>
-        <b>城市网络战争</b>
-      </div>
-      <div id="resource-bar" class="resource-bar"></div>
-      <div class="turn-box">
-        <span id="turn-label">回合 1</span>
-        <button id="end-turn" type="button">结束回合</button>
-        <button id="restart" type="button" title="重新开始">↻</button>
-      </div>
-    </header>
+  <main class="mechanism-board">
+    <aside class="manual-panel">
+      <h1>机制总览</h1>
+      <p><b>游戏目标：</b>控制更多资源点并连接己方主城，积累影响力，达成胜利条件。</p>
 
-    <section class="war-room">
+      <section>
+        <h2>胜利条件（满足任一）</h2>
+        <ol id="objective-list"></ol>
+      </section>
+
+      <section>
+        <h2>地图元素说明</h2>
+        <ul class="legend-list">
+          <li><i class="legend-icon star"></i><span><b>主城</b>核心城市，不可直接占领，连接城市会获得影响力。</span></li>
+          <li><i class="legend-icon keep"></i><span><b>要塞</b>战略据点，占领后提供防御与影响力加成。</span></li>
+          <li><i class="legend-icon resource"></i><span><b>资源点</b>提供金币、劳力和发展资源。</span></li>
+          <li><i class="legend-icon town"></i><span><b>城镇</b>连接城市节点，扩大控制范围。</span></li>
+          <li><i class="legend-icon port"></i><span><b>港口</b>可进行海路移动与贸易。</span></li>
+          <li><i class="legend-line road"></i><span><b>连接路线</b>城市之间的移动和贸易通道。</span></li>
+          <li><i class="legend-line sea"></i><span><b>陆路 / 海路</b>蓝色虚线为海路，必须连接港口。</span></li>
+          <li><i class="legend-ring"></i><span><b>影响范围</b>以己方城市为中心投射控制范围。</span></li>
+        </ul>
+      </section>
+    </aside>
+
+    <section class="map-paper">
+      <header class="map-topbar">
+        <div class="brand">
+          <span>FREEWAR V8</span>
+          <b>城市网络战争</b>
+        </div>
+        <div id="resource-bar" class="resource-bar"></div>
+        <div class="turn-box">
+          <span id="turn-label">回合 1</span>
+          <div id="action-pips" class="action-pips" aria-label="剩余行动点"></div>
+          <button id="end-turn" type="button">结束回合</button>
+          <button id="restart" type="button" title="重新开始">↻</button>
+        </div>
+      </header>
+
       <div class="map-frame">
         <canvas id="map" aria-label="V8 战略地图"></canvas>
+        <div class="compass">N</div>
         <div id="banner" class="banner" hidden></div>
       </div>
 
-      <aside class="side-panel">
-        <section id="selection-panel" class="panel selection-panel"></section>
-        <section class="panel log-panel">
-          <h2>战报</h2>
-          <ol id="log-list"></ol>
-        </section>
-      </aside>
+      <aside id="selection-panel" class="command-card panel"></aside>
+    </section>
+
+    <section class="rule-grid">
+      <article class="rule-card wide">
+        <h2>2. 基本行动（每回合可执行 2 项）</h2>
+        <ul>
+          <li>移动：将部队从一个己方城市移动到相邻连接城市。</li>
+          <li>占领：攻击相邻敌方城市，战斗胜利后占领。</li>
+          <li>建设：在己方城市建立道路或港口海路。</li>
+          <li>贸易：通过港口或连接路线获得资源与影响力。</li>
+          <li>招募：消耗资源招募部队。</li>
+        </ul>
+      </article>
+
+      <article class="rule-card">
+        <h2>3. 战斗机制</h2>
+        <ol>
+          <li>攻击方从相邻己方城市发动攻击。</li>
+          <li>道路 / 海路决定可攻击目标。</li>
+          <li>要塞和主城拥有额外防御。</li>
+          <li>切断路线可让敌方城市孤立。</li>
+        </ol>
+      </article>
+
+      <article class="rule-card">
+        <h2>4. 资源系统</h2>
+        <table>
+          <tr><th>类型</th><th>获取方式</th><th>用途</th></tr>
+          <tr><td>金币</td><td>城市与贸易</td><td>建路、招兵、升级</td></tr>
+          <tr><td>劳力</td><td>城市生产</td><td>建设、修复、攻城</td></tr>
+          <tr><td>影响力</td><td>主城网络</td><td>胜利条件与外交</td></tr>
+        </table>
+      </article>
+
+      <article class="rule-card">
+        <h2>5. 特殊规则</h2>
+        <ul>
+          <li>影响范围由城市等级和类型决定。</li>
+          <li>连接主城的城市获得完整收益。</li>
+          <li>孤立城市收入和成长降低。</li>
+          <li>海路必须连接两个港口。</li>
+        </ul>
+      </article>
+
+      <article class="rule-card">
+        <h2>6. 回合流程</h2>
+        <ol>
+          <li>资源收入</li>
+          <li>城市成长</li>
+          <li>敌方行动</li>
+          <li>胜利检查</li>
+          <li>恢复 2 点行动</li>
+        </ol>
+      </article>
+
+      <article class="rule-card">
+        <h2>7. 势力说明</h2>
+        <div id="faction-stats" class="faction-stats"></div>
+      </article>
+
+      <article class="rule-card log-card">
+        <h2>战报</h2>
+        <ol id="log-list"></ol>
+      </article>
     </section>
   </main>
 

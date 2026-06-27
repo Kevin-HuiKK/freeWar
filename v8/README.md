@@ -29,9 +29,10 @@ The game is a node-network strategy game: players build and attack city connecti
 V8 now has a playable browser MVP:
 
 - Canvas strategy map with landmasses, city nodes, borders, roads, sea lanes, and animated trade dots.
-- Player actions for route building, route upgrades, unit training, city attacks, route raids, and army transfer.
+- Mechanism-overview layout with left rules, central faction map, command card, and bottom rule panels.
+- Two-action turn economy for route building, route upgrades, unit training, city attacks, route raids, and army transfer.
 - Turn pipeline for income, growth, AI actions, and victory checks.
-- Three factions with capitals and starting networks.
+- Three factions with capitals, resource points, ports, fortresses, and starting networks.
 - Vitest coverage for the core V8 systems.
 
 Run locally from the repository root:

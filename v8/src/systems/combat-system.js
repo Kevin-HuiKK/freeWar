@@ -1,10 +1,11 @@
-import { UNIT_TYPES } from '../data/map-data.js';
+import { FACTION_IDS, UNIT_TYPES, VICTORY_RULES } from '../data/map-data.js';
 import {
   addLog,
   armyPower,
   canPay,
   cityById,
   routeById,
+  resourceCities,
   spendResources,
   totalUnits,
 } from '../core/game-state.js';
@@ -99,12 +100,29 @@ export function checkVictory(state) {
     state.winner = alive[0].id;
     return state.winner;
   }
-  const player = state.factions.player;
-  const playerCapitals = Object.values(state.cities).filter(city => city.type === 'capital' && city.owner === 'player').length;
-  if (playerCapitals >= 3) {
-    state.winner = 'player';
-    return state.winner;
+  for (const fid of FACTION_IDS) {
+    if (!state.factions[fid]?.alive) continue;
+    const capitals = Object.values(state.cities).filter(city => city.type === 'capital' && city.owner === fid).length;
+    if (capitals >= VICTORY_RULES.capitalTarget) {
+      state.winner = fid;
+      return state.winner;
+    }
+    if ((state.factions[fid].resources.influence || 0) >= VICTORY_RULES.influenceTarget) {
+      state.winner = fid;
+      return state.winner;
+    }
   }
+  if (state.turn >= VICTORY_RULES.resourceLeadTurn) {
+    const scores = FACTION_IDS
+      .filter(fid => state.factions[fid]?.alive)
+      .map(fid => ({ fid, count: resourceCities(state, fid).length }))
+      .sort((a, b) => b.count - a.count);
+    if (scores[0] && scores[1] && scores[0].count - scores[1].count >= VICTORY_RULES.resourceLeadMargin) {
+      state.winner = scores[0].fid;
+      return state.winner;
+    }
+  }
+  const player = state.factions.player;
   if (!player.alive) {
     state.winner = alive.find(f => f.id !== 'player')?.id || null;
     return state.winner;

@@ -1,5 +1,5 @@
-import { createNewGame, cityById, routeById, totalUnits } from './core/game-state.js';
-import { CITY_TYPES, FACTIONS, RESOURCE_NAMES, UNIT_TYPES } from './data/map-data.js';
+import { addLog, consumeAction, createNewGame, cityById, resetActions, resourceCities, routeById } from './core/game-state.js';
+import { ACTIONS_PER_TURN, CITY_TYPES, FACTIONS, RESOURCE_NAMES, UNIT_TYPES, VICTORY_RULES } from './data/map-data.js';
 import { renderMap, fitCamera } from './render/map-renderer.js';
 import { createInputController } from './ui/input-controller.js';
 import { applyAllIncome } from './systems/economy-system.js';
@@ -24,6 +24,9 @@ const turnLabel = document.getElementById('turn-label');
 const endTurnBtn = document.getElementById('end-turn');
 const restartBtn = document.getElementById('restart');
 const banner = document.getElementById('banner');
+const objectiveList = document.getElementById('objective-list');
+const actionPips = document.getElementById('action-pips');
+const factionStats = document.getElementById('faction-stats');
 
 let state = createNewGame();
 let camera = { scale: 1, x: 0, y: 0 };
@@ -49,6 +52,9 @@ function renderHUD() {
   renderSelection();
   renderLog();
   renderBanner();
+  renderObjectives();
+  renderActionPips();
+  renderFactionStats();
 }
 
 function renderSelection() {
@@ -94,6 +100,7 @@ function renderCityPanel(city) {
 
   addTrainButtons(actions, city);
   addNeighborActions(actions, city);
+  applyActionLock(actions);
 }
 
 function addTrainButtons(root, city) {
@@ -108,7 +115,7 @@ function addTrainButtons(root, city) {
     btn.disabled = !check.ok;
     btn.title = check.msg;
     btn.innerHTML = `<span>${unit.icon} ${unit.name}</span><small>${costText(unit.cost)}</small>`;
-    btn.addEventListener('click', () => runAction(trainUnit(state, 'player', city.id, unitId)));
+    btn.addEventListener('click', () => runPlayerAction(() => trainUnit(state, 'player', city.id, unitId)));
     group.appendChild(btn);
   }
   root.appendChild(group);
@@ -126,16 +133,16 @@ function addNeighborActions(root, city) {
     const route = option.existing;
     if (target.owner === 'player' && route?.status === 'active') {
       btn.innerHTML = `<span>调兵至 ${target.name}</span><small>${route.kind === 'sea' ? '海路' : '道路'} Lv.${route.level}</small>`;
-      btn.addEventListener('click', () => runAction(moveArmy(state, 'player', city.id, target.id)));
+      btn.addEventListener('click', () => runPlayerAction(() => moveArmy(state, 'player', city.id, target.id)));
     } else if (target.owner && target.owner !== 'player' && route?.status === 'active') {
       btn.innerHTML = `<span>进攻 ${target.name}</span><small>${FACTIONS[target.owner].shortName} · ${route.kind === 'sea' ? '需舰队' : '陆路'}</small>`;
-      btn.addEventListener('click', () => runAction(attackCity(state, 'player', city.id, target.id)));
+      btn.addEventListener('click', () => runPlayerAction(() => attackCity(state, 'player', city.id, target.id)));
     } else {
       const check = canBuildRoute(state, 'player', city.id, target.id);
       btn.innerHTML = `<span>${target.owner === 'player' ? '建立连接' : '连接并纳入'} ${target.name}</span><small>${option.kind === 'sea' ? '海路' : '道路'} · ${costText(option.buildCost)}</small>`;
       btn.disabled = !check.ok;
       btn.title = check.msg;
-      btn.addEventListener('click', () => runAction(buildRoute(state, 'player', city.id, target.id)));
+      btn.addEventListener('click', () => runPlayerAction(() => buildRoute(state, 'player', city.id, target.id)));
     }
     group.appendChild(btn);
   }
@@ -164,21 +171,22 @@ function renderRoutePanel(route) {
     upgrade.type = 'button';
     upgrade.disabled = !check.ok;
     upgrade.textContent = check.ok ? '升级连接' : check.msg;
-    upgrade.addEventListener('click', () => runAction(upgradeRoute(state, 'player', route.id)));
+    upgrade.addEventListener('click', () => runPlayerAction(() => upgradeRoute(state, 'player', route.id)));
     actions.appendChild(upgrade);
     const repair = document.createElement('button');
     repair.type = 'button';
     repair.disabled = route.status !== 'broken';
     repair.textContent = '修复连接';
-    repair.addEventListener('click', () => runAction(repairRoute(state, 'player', route.id)));
+    repair.addEventListener('click', () => runPlayerAction(() => repairRoute(state, 'player', route.id)));
     actions.appendChild(repair);
   } else {
     const cut = document.createElement('button');
     cut.type = 'button';
     cut.textContent = '切断敌方连接';
-    cut.addEventListener('click', () => runAction(raidRoute(state, 'player', route.id)));
+    cut.addEventListener('click', () => runPlayerAction(() => raidRoute(state, 'player', route.id)));
     actions.appendChild(cut);
   }
+  applyActionLock(actions);
 }
 
 function renderLog() {
@@ -196,9 +204,21 @@ function renderBanner() {
     : `战败：${FACTIONS[state.winner].name} 取得霸权。`;
 }
 
+function runPlayerAction(action) {
+  if (state.winner) return;
+  if ((state.actionsRemaining || 0) <= 0) {
+    addLog(state, `本回合行动已用完，每回合最多 ${ACTIONS_PER_TURN} 项。`);
+    renderHUD();
+    return;
+  }
+  const result = action();
+  if (result.ok) consumeAction(state);
+  runAction(result);
+}
+
 function runAction(result) {
   if (!result.ok && result.msg) {
-    state.log.push(result.msg);
+    addLog(state, result.msg);
   }
   checkVictory(state);
   renderHUD();
@@ -208,11 +228,17 @@ function endTurn() {
   if (state.winner) return;
   applyAllIncome(state);
   applyCityGrowth(state);
+  checkVictory(state);
+  if (state.winner) {
+    renderHUD();
+    return;
+  }
   for (const fid of Object.keys(FACTIONS)) {
     if (fid !== 'player') playAITurn(state, fid);
   }
   checkVictory(state);
   state.turn += 1;
+  resetActions(state);
   renderHUD();
 }
 
@@ -227,6 +253,46 @@ function costText(cost) {
 
 function escapeHtml(value) {
   return value.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+}
+
+function renderObjectives() {
+  if (!objectiveList) return;
+  const playerInfluence = state.factions.player.resources.influence || 0;
+  const playerResources = resourceCities(state, 'player').length;
+  objectiveList.innerHTML = `
+    <li>占领全部主城：${ownedCapitalCount('player')}/${VICTORY_RULES.capitalTarget}</li>
+    <li>影响力达到 ${VICTORY_RULES.influenceTarget}：${playerInfluence}/${VICTORY_RULES.influenceTarget}</li>
+    <li>第 ${VICTORY_RULES.resourceLeadTurn} 回合后资源点领先 ${VICTORY_RULES.resourceLeadMargin} 个：当前 ${playerResources}</li>
+  `;
+}
+
+function renderActionPips() {
+  if (!actionPips) return;
+  actionPips.innerHTML = Array.from({ length: ACTIONS_PER_TURN }, (_, index) => (
+    `<i class="${index < state.actionsRemaining ? 'active' : ''}"></i>`
+  )).join('');
+}
+
+function renderFactionStats() {
+  if (!factionStats) return;
+  factionStats.innerHTML = Object.values(FACTIONS).map(faction => {
+    const owned = Object.values(state.cities).filter(city => city.owner === faction.id).length;
+    const resources = resourceCities(state, faction.id).length;
+    const capital = ownedCapitalCount(faction.id);
+    return `<div style="--faction:${faction.color}"><b>${faction.shortName}</b><span>城市 ${owned}</span><span>资源 ${resources}</span><span>主城 ${capital}</span></div>`;
+  }).join('');
+}
+
+function ownedCapitalCount(factionId) {
+  return Object.values(state.cities).filter(city => city.type === 'capital' && city.owner === factionId).length;
+}
+
+function applyActionLock(root) {
+  if ((state.actionsRemaining || 0) > 0) return;
+  for (const button of root.querySelectorAll('button')) {
+    button.disabled = true;
+    button.title = '本回合行动已用完';
+  }
 }
 
 window.addEventListener('resize', resize);
