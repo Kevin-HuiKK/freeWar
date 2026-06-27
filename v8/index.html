@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FreeWar V8 · 城市网络战争</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span>FREEWAR V8</span>
+        <b>城市网络战争</b>
+      </div>
+      <div id="resource-bar" class="resource-bar"></div>
+      <div class="turn-box">
+        <span id="turn-label">回合 1</span>
+        <button id="end-turn" type="button">结束回合</button>
+        <button id="restart" type="button" title="重新开始">↻</button>
+      </div>
+    </header>
+
+    <section class="war-room">
+      <div class="map-frame">
+        <canvas id="map" aria-label="V8 战略地图"></canvas>
+        <div id="banner" class="banner" hidden></div>
+      </div>
+
+      <aside class="side-panel">
+        <section id="selection-panel" class="panel selection-panel"></section>
+        <section class="panel log-panel">
+          <h2>战报</h2>
+          <ol id="log-list"></ol>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+{
+  "project": "freeWar-v8",
+  "style": "hand-drawn strategy map, ink on aged paper, red pencil planning marks, clean game-readable UI",
+  "backgrounds": [
+    {
+      "id": "world_map_base",
+      "path": "assets/backgrounds/world_map_base.png",
+      "size": [1920, 1080],
+      "required": true,
+      "description": "Main archipelago parchment map without nodes, roads, UI, borders, or labels."
+    },
+    {
+      "id": "world_map_texture",
+      "path": "assets/backgrounds/world_map_texture.png",
+      "size": [1920, 1080],
+      "required": false,
+      "description": "Subtle paper grain and coast detail overlay."
+    }
+  ],
+  "nodes": [
+    "city_village.png",
+    "city_town.png",
+    "city_city.png",
+    "city_great.png",
+    "city_capital.png",
+    "city_port.png",
+    "city_barracks.png",
+    "city_trade.png",
+    "city_fortress.png"
+  ],
+  "routes": [
+    "road_normal.png",
+    "road_trade.png",
+    "road_military.png",
+    "road_broken.png",
+    "sea_lane.png",
+    "sea_lane_blockaded.png"
+  ],
+  "icons": [
+    "gold.png",
+    "food.png",
+    "labor.png",
+    "influence.png",
+    "infantry.png",
+    "cavalry.png",
+    "engineer.png",
+    "siege_train.png",
+    "guard.png",
+    "fleet.png"
+  ],
+  "ui": [
+    "panel_parchment.png",
+    "button_dark.png",
+    "button_gold.png",
+    "tooltip_frame.png",
+    "border_player.png",
+    "border_enemy_red.png",
+    "border_enemy_blue.png",
+    "border_neutral.png"
+  ]
+}
+
