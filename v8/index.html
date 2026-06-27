@@ -11,11 +11,18 @@
   <main class="mechanism-board">
     <aside class="manual-panel">
       <h1>机制总览</h1>
-      <p><b>游戏目标：</b>控制更多资源点并连接己方主城，积累影响力，达成胜利条件。</p>
+      <p><b>游戏目标：</b>通过城市网络扩张与战争，最终占领 3 个首都。</p>
 
       <section>
-        <h2>胜利条件（满足任一）</h2>
+        <h2>唯一胜利条件</h2>
         <ol id="objective-list"></ol>
+      </section>
+
+      <section>
+        <h2>永久天赋</h2>
+        <p class="talent-note">占领 3 个首都胜利后可领取 1 点天赋。天赋保存在本机，不会随重新开局重置。</p>
+        <div class="talent-bank">可用天赋点：<b id="talent-points">0</b></div>
+        <div id="talent-list" class="talent-list"></div>
       </section>
 
       <section>
@@ -85,7 +92,7 @@
           <tr><th>类型</th><th>获取方式</th><th>用途</th></tr>
           <tr><td>金币</td><td>城市与贸易</td><td>建路、招兵、升级</td></tr>
           <tr><td>劳力</td><td>城市生产</td><td>建设、修复、攻城</td></tr>
-          <tr><td>影响力</td><td>主城网络</td><td>胜利条件与外交</td></tr>
+          <tr><td>影响力</td><td>主城网络</td><td>外交、视野与后续扩展</td></tr>
         </table>
       </article>
 
@@ -116,7 +123,8 @@
       </article>
 
       <article class="rule-card log-card">
-        <h2>战报</h2>
+        <h2>战报 / 胜利奖励</h2>
+        <p class="reward-copy">占领 3 个首都胜利后领取天赋点，用来升级主城、道路和港口工程。</p>
         <ol id="log-list"></ol>
       </article>
     </section>

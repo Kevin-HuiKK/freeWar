@@ -3,10 +3,28 @@
 export const WORLD = { width: 1920, height: 1080 };
 export const ACTIONS_PER_TURN = 2;
 export const VICTORY_RULES = {
-  influenceTarget: 20,
   capitalTarget: 3,
-  resourceLeadTurn: 12,
-  resourceLeadMargin: 4,
+};
+
+export const TALENTS = {
+  capitalExpansion: {
+    id: 'capitalExpansion',
+    name: '主城扩建',
+    max: 3,
+    desc: '每级使开局主城等级 +1，并提高主城防御。',
+  },
+  grandRoads: {
+    id: 'grandRoads',
+    name: '宏大道路',
+    max: 3,
+    desc: '每级降低建路和升级连接的金币、劳力消耗。',
+  },
+  harborWorks: {
+    id: 'harborWorks',
+    name: '海港船坞',
+    max: 3,
+    desc: '每级增加开局金币与劳力，并强化港口舰队。',
+  },
 };
 
 export const FACTIONS = {
@@ -105,6 +123,11 @@ export const CITY_DEFS = [
   { id: 'c_fogbank', name: '雾岸', x: 860, y: 260, type: 'village', level: 1, owner: null, tags: [] },
   { id: 'c_silverfen', name: '银沼', x: 1035, y: 250, type: 'resource', level: 2, owner: null, tags: ['resource', 'trade'] },
   { id: 'c_gatecross', name: '界桥', x: 1030, y: 570, type: 'city', level: 2, owner: null, tags: [] },
+  { id: 'c_whitecliff', name: '白崖', x: 720, y: 265, type: 'town', level: 1, owner: null, tags: [] },
+  { id: 'c_glassbay', name: '璃湾', x: 850, y: 840, type: 'port', level: 1, owner: null, tags: ['port'] },
+  { id: 'c_drywell', name: '旱井', x: 1130, y: 150, type: 'village', level: 1, owner: null, tags: [] },
+  { id: 'c_moonpass', name: '月隘', x: 1530, y: 190, type: 'fortress', level: 1, owner: null, tags: ['fortress'] },
+  { id: 'c_amberholm', name: '琥珀洲', x: 1760, y: 860, type: 'resource', level: 1, owner: null, tags: ['resource', 'island'] },
 ];
 
 const roadPairs = [
@@ -118,13 +141,15 @@ const roadPairs = [
   ['c_blackhill', 'c_lonebell'], ['c_bloodford', 'c_mistden'], ['c_mistden', 'c_blueharbor'], ['c_mistden', 'c_tideglass'],
   ['c_blueharbor', 'c_tideglass'], ['c_blueharbor', 'c_reefwatch'], ['c_blueharbor', 'c_saltmarket'], ['c_tideglass', 'c_saltmarket'],
   ['c_reefwatch', 'c_pearl'], ['c_reefwatch', 'c_whale'], ['c_lonebell', 'c_whale'], ['c_stonehook', 'c_crowisle'],
-  ['c_sunreach', 'c_highnest'],
+  ['c_sunreach', 'c_highnest'], ['c_whitecliff', 'c_larkfield'], ['c_whitecliff', 'c_fogbank'], ['c_drywell', 'c_silverfen'],
+  ['c_drywell', 'c_emberfall'], ['c_moonpass', 'c_redfarm'], ['c_moonpass', 'c_blackhill'], ['c_amberholm', 'c_whale'],
+  ['c_amberholm', 'c_pearl'],
 ];
 
 const seaPairs = [
   ['c_oldport', 'c_crowisle'], ['c_oldport', 'c_midreef'], ['c_midreef', 'c_blueharbor'], ['c_midreef', 'c_cinderport'],
   ['c_cinderport', 'c_lonebell'], ['c_lonebell', 'c_reefwatch'], ['c_sunreach', 'c_oldport'], ['c_sunreach', 'c_cinderport'],
-  ['c_crowisle', 'c_saltmarket'], ['c_reefwatch', 'c_pearl'],
+  ['c_crowisle', 'c_saltmarket'], ['c_reefwatch', 'c_pearl'], ['c_oldport', 'c_glassbay'], ['c_glassbay', 'c_saltmarket'],
 ];
 
 export const ROUTE_CANDIDATES = roadPairs.map(([from, to]) => makeCandidate(from, to, 'road'));

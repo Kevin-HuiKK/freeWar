@@ -31,8 +31,9 @@ V8 now has a playable browser MVP:
 - Canvas strategy map with landmasses, city nodes, borders, roads, sea lanes, and animated trade dots.
 - Mechanism-overview layout with left rules, central faction map, command card, and bottom rule panels.
 - Two-action turn economy for route building, route upgrades, unit training, city attacks, route raids, and army transfer.
-- Turn pipeline for income, growth, AI actions, and victory checks.
-- Three factions with capitals, resource points, ports, fortresses, and starting networks.
+- Single victory condition: occupy all 3 capitals.
+- Permanent talent points: claim 1 point after victory and spend it on persistent upgrades that do not reset between games.
+- Three factions with capitals, resource points, ports, fortresses, independent neutral cities, and starting networks.
 - Vitest coverage for the core V8 systems.
 
 Run locally from the repository root:

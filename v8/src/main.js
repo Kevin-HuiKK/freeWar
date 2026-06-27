@@ -1,5 +1,5 @@
 import { addLog, consumeAction, createNewGame, cityById, resetActions, resourceCities, routeById } from './core/game-state.js';
-import { ACTIONS_PER_TURN, CITY_TYPES, FACTIONS, RESOURCE_NAMES, UNIT_TYPES, VICTORY_RULES } from './data/map-data.js';
+import { ACTIONS_PER_TURN, CITY_TYPES, FACTIONS, RESOURCE_NAMES, TALENTS, UNIT_TYPES, VICTORY_RULES } from './data/map-data.js';
 import { renderMap, fitCamera } from './render/map-renderer.js';
 import { createInputController } from './ui/input-controller.js';
 import { applyAllIncome } from './systems/economy-system.js';
@@ -9,6 +9,7 @@ import {
   buildRoute,
   canBuildRoute,
   canUpgradeRoute,
+  adjustedCost,
   repairRoute,
   routeCandidatesFrom,
   upgradeRoute,
@@ -27,8 +28,12 @@ const banner = document.getElementById('banner');
 const objectiveList = document.getElementById('objective-list');
 const actionPips = document.getElementById('action-pips');
 const factionStats = document.getElementById('faction-stats');
+const talentPointsEl = document.getElementById('talent-points');
+const talentList = document.getElementById('talent-list');
 
-let state = createNewGame();
+const TALENT_STORAGE_KEY = 'freewar_v8_talent_state';
+let talentState = loadTalentState();
+let state = createNewGame(talentState.upgrades);
 let camera = { scale: 1, x: 0, y: 0 };
 
 function resize() {
@@ -55,6 +60,7 @@ function renderHUD() {
   renderObjectives();
   renderActionPips();
   renderFactionStats();
+  renderTalents();
 }
 
 function renderSelection() {
@@ -139,7 +145,7 @@ function addNeighborActions(root, city) {
       btn.addEventListener('click', () => runPlayerAction(() => attackCity(state, 'player', city.id, target.id)));
     } else {
       const check = canBuildRoute(state, 'player', city.id, target.id);
-      btn.innerHTML = `<span>${target.owner === 'player' ? '建立连接' : '连接并纳入'} ${target.name}</span><small>${option.kind === 'sea' ? '海路' : '道路'} · ${costText(option.buildCost)}</small>`;
+      btn.innerHTML = `<span>${target.owner === 'player' ? '建立连接' : '连接并纳入'} ${target.name}</span><small>${option.kind === 'sea' ? '海路' : '道路'} · ${costText(adjustedCost(state, option.buildCost, 'player'))}</small>`;
       btn.disabled = !check.ok;
       btn.title = check.msg;
       btn.addEventListener('click', () => runPlayerAction(() => buildRoute(state, 'player', city.id, target.id)));
@@ -199,9 +205,16 @@ function renderBanner() {
     return;
   }
   banner.hidden = false;
-  banner.textContent = state.winner === 'player'
-    ? '胜利：你控制了全部首都。'
-    : `战败：${FACTIONS[state.winner].name} 取得霸权。`;
+  if (state.winner === 'player') {
+    banner.innerHTML = `
+      <strong>胜利：你占领了 3 个首都。</strong>
+      <button id="claim-talent" type="button" ${state.rewardClaimed ? 'disabled' : ''}>${state.rewardClaimed ? '已领取天赋点' : '领取 1 点天赋'}</button>
+    `;
+    const claim = document.getElementById('claim-talent');
+    claim?.addEventListener('click', claimTalentReward);
+  } else {
+    banner.textContent = `战败：${FACTIONS[state.winner].name} 占领了 3 个首都。`;
+  }
 }
 
 function runPlayerAction(action) {
@@ -243,7 +256,7 @@ function endTurn() {
 }
 
 function restart() {
-  state = createNewGame();
+  state = createNewGame(talentState.upgrades);
   renderHUD();
 }
 
@@ -257,12 +270,8 @@ function escapeHtml(value) {
 
 function renderObjectives() {
   if (!objectiveList) return;
-  const playerInfluence = state.factions.player.resources.influence || 0;
-  const playerResources = resourceCities(state, 'player').length;
   objectiveList.innerHTML = `
-    <li>占领全部主城：${ownedCapitalCount('player')}/${VICTORY_RULES.capitalTarget}</li>
-    <li>影响力达到 ${VICTORY_RULES.influenceTarget}：${playerInfluence}/${VICTORY_RULES.influenceTarget}</li>
-    <li>第 ${VICTORY_RULES.resourceLeadTurn} 回合后资源点领先 ${VICTORY_RULES.resourceLeadMargin} 个：当前 ${playerResources}</li>
+    <li>占领 3 个首都：${ownedCapitalCount('player')}/${VICTORY_RULES.capitalTarget}</li>
   `;
 }
 
@@ -293,6 +302,72 @@ function applyActionLock(root) {
     button.disabled = true;
     button.title = '本回合行动已用完';
   }
+}
+
+function loadTalentState() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(TALENT_STORAGE_KEY) || '{}');
+    return normalizeTalentState(parsed);
+  } catch {
+    return normalizeTalentState({});
+  }
+}
+
+function normalizeTalentState(input) {
+  const upgrades = {};
+  for (const id of Object.keys(TALENTS)) {
+    const level = Number(input?.upgrades?.[id] || 0);
+    upgrades[id] = Math.max(0, Math.min(TALENTS[id].max, Number.isFinite(level) ? level : 0));
+  }
+  return {
+    points: Math.max(0, Number(input?.points || 0)),
+    upgrades,
+  };
+}
+
+function saveTalentState() {
+  localStorage.setItem(TALENT_STORAGE_KEY, JSON.stringify(talentState));
+}
+
+function claimTalentReward() {
+  if (state.winner !== 'player' || state.rewardClaimed) return;
+  talentState.points += 1;
+  state.rewardClaimed = true;
+  saveTalentState();
+  addLog(state, '胜利奖励：获得 1 点永久天赋。');
+  renderHUD();
+}
+
+function renderTalents() {
+  if (!talentList || !talentPointsEl) return;
+  talentPointsEl.textContent = talentState.points;
+  talentList.innerHTML = Object.values(TALENTS).map(talent => {
+    const level = talentState.upgrades[talent.id] || 0;
+    const maxed = level >= talent.max;
+    const disabled = talentState.points <= 0 || maxed;
+    return `
+      <button class="talent-card" type="button" data-talent="${talent.id}" ${disabled ? 'disabled' : ''}>
+        <span><b>${talent.name}</b><i>Lv.${level}/${talent.max}</i></span>
+        <small>${talent.desc}</small>
+        <em>${maxed ? '已满级' : '消耗 1 点升级'}</em>
+      </button>
+    `;
+  }).join('');
+  for (const button of talentList.querySelectorAll('[data-talent]')) {
+    button.addEventListener('click', () => upgradeTalent(button.dataset.talent));
+  }
+}
+
+function upgradeTalent(talentId) {
+  const talent = TALENTS[talentId];
+  if (!talent || talentState.points <= 0) return;
+  const current = talentState.upgrades[talentId] || 0;
+  if (current >= talent.max) return;
+  talentState.points -= 1;
+  talentState.upgrades[talentId] = current + 1;
+  saveTalentState();
+  addLog(state, `永久天赋升级：${talent.name} Lv.${current + 1}，下一局生效。`);
+  renderHUD();
 }
 
 window.addEventListener('resize', resize);

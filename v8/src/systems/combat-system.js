@@ -5,7 +5,6 @@ import {
   canPay,
   cityById,
   routeById,
-  resourceCities,
   spendResources,
   totalUnits,
 } from '../core/game-state.js';
@@ -95,11 +94,6 @@ export function raidRoute(state, factionId, routeId) {
 }
 
 export function checkVictory(state) {
-  const alive = Object.values(state.factions).filter(faction => faction.alive);
-  if (alive.length === 1) {
-    state.winner = alive[0].id;
-    return state.winner;
-  }
   for (const fid of FACTION_IDS) {
     if (!state.factions[fid]?.alive) continue;
     const capitals = Object.values(state.cities).filter(city => city.type === 'capital' && city.owner === fid).length;
@@ -107,25 +101,6 @@ export function checkVictory(state) {
       state.winner = fid;
       return state.winner;
     }
-    if ((state.factions[fid].resources.influence || 0) >= VICTORY_RULES.influenceTarget) {
-      state.winner = fid;
-      return state.winner;
-    }
-  }
-  if (state.turn >= VICTORY_RULES.resourceLeadTurn) {
-    const scores = FACTION_IDS
-      .filter(fid => state.factions[fid]?.alive)
-      .map(fid => ({ fid, count: resourceCities(state, fid).length }))
-      .sort((a, b) => b.count - a.count);
-    if (scores[0] && scores[1] && scores[0].count - scores[1].count >= VICTORY_RULES.resourceLeadMargin) {
-      state.winner = scores[0].fid;
-      return state.winner;
-    }
-  }
-  const player = state.factions.player;
-  if (!player.alive) {
-    state.winner = alive.find(f => f.id !== 'player')?.id || null;
-    return state.winner;
   }
   return null;
 }
@@ -142,7 +117,6 @@ function checkFactionDefeat(state, factionId) {
   if (!factionId || !state.factions[factionId]) return;
   const capital = cityById(state, state.factions[factionId].capitalId);
   if (capital?.owner !== factionId) {
-    state.factions[factionId].alive = false;
-    addLog(state, `${state.factions[factionId].shortName} 首都陷落，退出战局`);
+    addLog(state, `${state.factions[factionId].shortName} 首都陷落，仍可继续争夺其它首都`);
   }
 }

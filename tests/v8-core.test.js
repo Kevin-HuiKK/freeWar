@@ -13,6 +13,7 @@ describe('v8 city network core', () => {
     expect(Object.keys(state.routes).length).toBeGreaterThan(5);
     expect(state.actionsRemaining).toBe(2);
     expect(resourceCities(state, 'player').length).toBeGreaterThan(0);
+    expect(['c_whitecliff', 'c_glassbay', 'c_drywell', 'c_moonpass', 'c_amberholm'].every(id => cityById(state, id).owner === null)).toBe(true);
   });
 
   it('tracks two player actions per turn', () => {
@@ -39,10 +40,20 @@ describe('v8 city network core', () => {
     expect(after).toBeGreaterThan(base);
   });
 
-  it('can win by influence target', () => {
+  it('only wins by occupying three capitals', () => {
     const state = createNewGame();
     state.factions.player.resources.influence = 20;
+    expect(checkVictory(state)).toBe(null);
+    cityById(state, 'c_redspire').owner = 'player';
+    cityById(state, 'c_blueharbor').owner = 'player';
     expect(checkVictory(state)).toBe('player');
+  });
+
+  it('applies persistent talent bonuses to new games', () => {
+    const state = createNewGame({ capitalExpansion: 2, harborWorks: 1, grandRoads: 1 });
+    expect(cityById(state, 'c_aurea').level).toBe(5);
+    expect(cityById(state, 'c_oldport').garrison.fleet).toBeGreaterThan(1);
+    expect(state.factions.player.resources.gold).toBeGreaterThan(120);
   });
 
   it('applies city growth without crashing and can upgrade cities over time', () => {

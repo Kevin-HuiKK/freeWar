@@ -22,7 +22,8 @@ export function canBuildRoute(state, factionId, fromCityId, toCityId) {
   const id = candidateId(fromCityId, toCityId, candidate.kind);
   if (state.routes[id]?.status === 'active') return { ok: false, msg: '连接已经存在' };
   const faction = state.factions[factionId];
-  if (!canPay(faction, candidate.buildCost)) return { ok: false, msg: costText(candidate.buildCost) + ' 不足' };
+  const cost = adjustedCost(state, candidate.buildCost, factionId);
+  if (!canPay(faction, cost)) return { ok: false, msg: costText(cost) + ' 不足' };
   return { ok: true, candidate, msg: '' };
 }
 
@@ -31,7 +32,7 @@ export function buildRoute(state, factionId, fromCityId, toCityId) {
   if (!check.ok) return check;
   const { candidate } = check;
   const id = candidateId(fromCityId, toCityId, candidate.kind);
-  spendResources(state.factions[factionId], candidate.buildCost);
+  spendResources(state.factions[factionId], adjustedCost(state, candidate.buildCost, factionId));
   const target = cityById(state, toCityId);
   if (!target.owner) {
     target.owner = factionId;
@@ -59,8 +60,9 @@ export function canUpgradeRoute(state, factionId, routeId) {
   if (route.owner !== factionId) return { ok: false, msg: '不是你的连接' };
   if (route.level >= 3) return { ok: false, msg: '连接已满级' };
   const cost = upgradeCost(route);
-  if (!canPay(state.factions[factionId], cost)) return { ok: false, msg: costText(cost) + ' 不足' };
-  return { ok: true, cost };
+  const adjusted = adjustedCost(state, cost, factionId);
+  if (!canPay(state.factions[factionId], adjusted)) return { ok: false, msg: costText(adjusted) + ' 不足' };
+  return { ok: true, cost: adjusted };
 }
 
 export function upgradeRoute(state, factionId, routeId) {
@@ -142,6 +144,17 @@ export function upgradeCost(route) {
     gold: 28 + route.level * 20 + (route.kind === 'sea' ? 12 : 0),
     labor: 12 + route.level * 9,
   };
+}
+
+export function adjustedCost(state, cost, factionId) {
+  if (factionId !== 'player') return { ...cost };
+  const discount = Math.min(0.3, (state.talents?.grandRoads || 0) * 0.1);
+  if (!discount) return { ...cost };
+  const out = {};
+  for (const [key, value] of Object.entries(cost)) {
+    out[key] = Math.max(1, Math.ceil(value * (1 - discount)));
+  }
+  return out;
 }
 
 export function costText(cost) {

@@ -77,6 +77,71 @@ button {
   font: 700 14px/1.65 "PingFang SC", sans-serif;
 }
 
+.talent-note {
+  margin-bottom: 8px !important;
+  font-size: 12px !important;
+  color: var(--ink-soft);
+}
+
+.talent-bank {
+  margin: 0 0 9px;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  background: rgba(255, 250, 235, 0.5);
+  font: 900 13px/1 "PingFang SC", sans-serif;
+}
+
+.talent-bank b {
+  color: #8a5b17;
+  font-size: 18px;
+}
+
+.talent-list {
+  display: grid;
+  gap: 7px;
+}
+
+.talent-card {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  padding: 8px 9px;
+  border: 1px solid rgba(83, 62, 38, 0.42);
+  border-radius: 2px;
+  background: rgba(255, 250, 235, 0.58);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.talent-card span {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font: 900 13px/1.2 "PingFang SC", sans-serif;
+}
+
+.talent-card i {
+  color: #8a5b17;
+  font-style: normal;
+}
+
+.talent-card small {
+  color: var(--ink-soft);
+  font: 700 11px/1.35 "PingFang SC", sans-serif;
+}
+
+.talent-card em {
+  color: #7b3b24;
+  font: 900 11px/1 "PingFang SC", sans-serif;
+  font-style: normal;
+}
+
+.talent-card:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .manual-panel section {
   border-top: 1px solid var(--line);
   padding-top: 12px;
@@ -450,6 +515,30 @@ dd {
   box-shadow: 0 16px 38px rgba(56, 40, 20, 0.26);
 }
 
+.banner strong {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.banner button {
+  display: block;
+  margin: 0 auto;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(64, 43, 23, 0.5);
+  border-radius: 2px;
+  background: linear-gradient(180deg, #b85035, #7c2d21);
+  color: #fff7df;
+  font: 900 14px/1 "PingFang SC", sans-serif;
+  cursor: pointer;
+}
+
+.banner button:disabled {
+  filter: grayscale(0.7);
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
 .rule-grid {
   grid-column: 1 / -1;
   display: grid;
@@ -499,6 +588,12 @@ dd {
 
 .log-card {
   max-height: 210px;
+}
+
+.reward-copy {
+  margin: 0 0 8px;
+  color: var(--ink-soft);
+  font: 800 12px/1.45 "PingFang SC", sans-serif;
 }
 
 #log-list {

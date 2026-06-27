@@ -125,8 +125,7 @@ Acceptance:
 - Route hit areas do not block city clicks.
 - End turn pipeline is deterministic.
 - AI does not build impossible routes.
-- Capturing a capital triggers victory check.
+- Occupying all 3 capitals triggers victory.
 - Broken routes remove trade income immediately.
 - Sea routes require port endpoints.
 - UI panels do not cover important map nodes at 1280x720.
-

@@ -6,11 +6,13 @@ import {
   FACTION_IDS,
   INITIAL_ROUTES,
   STARTING_RESOURCES,
+  TALENTS,
   UNIT_TYPES,
   candidateId,
 } from '../data/map-data.js';
 
-export function createNewGame() {
+export function createNewGame(talentUpgrades = {}) {
+  const talents = normalizeTalents(talentUpgrades);
   const cities = {};
   const factions = {};
   const routes = {};
@@ -20,7 +22,7 @@ export function createNewGame() {
     factions[fid] = {
       ...FACTIONS[fid],
       alive: true,
-      resources: { ...STARTING_RESOURCES },
+      resources: fid === 'player' ? startingResourcesWithTalents(talents) : { ...STARTING_RESOURCES },
       talents: [],
     };
   }
@@ -37,6 +39,7 @@ export function createNewGame() {
       isolated: false,
       garrison: startingGarrison(def),
     };
+    if (def.owner === 'player') applyCityTalentBonuses(cities[def.id], talents);
   }
 
   for (const [from, to, owner, kind] of INITIAL_ROUTES) {
@@ -72,12 +75,44 @@ export function createNewGame() {
     selected: { kind: 'city', id: FACTIONS.player.capitalId },
     hover: null,
     winner: null,
+    rewardClaimed: false,
+    talents,
     factions,
     cities,
     routes,
     armies,
     log: ['新战局开始：连接城市，保护贸易线，夺取敌方首都。'],
   };
+}
+
+function normalizeTalents(input = {}) {
+  const out = {};
+  for (const id of Object.keys(TALENTS)) {
+    const level = Number(input[id] || 0);
+    out[id] = Math.max(0, Math.min(TALENTS[id].max, Number.isFinite(level) ? level : 0));
+  }
+  return out;
+}
+
+function startingResourcesWithTalents(talents) {
+  const harbor = talents.harborWorks || 0;
+  return {
+    ...STARTING_RESOURCES,
+    gold: STARTING_RESOURCES.gold + harbor * 28,
+    labor: STARTING_RESOURCES.labor + harbor * 12,
+  };
+}
+
+function applyCityTalentBonuses(city, talents) {
+  if (city.type === 'capital') {
+    const level = talents.capitalExpansion || 0;
+    city.level += level;
+    city.defense += level * 4;
+    city.garrison.guard += level;
+  }
+  if (city.tags?.includes('port')) {
+    city.garrison.fleet += talents.harborWorks || 0;
+  }
 }
 
 function startingGarrison(def) {

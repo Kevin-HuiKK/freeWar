@@ -164,13 +164,13 @@ MVP AI priorities:
 5. Attack isolated cities.
 6. Defend capital if enemy army is nearby.
 
-## Victory Conditions
+## Victory Condition
 
-Use one primary and two optional victory modes.
+V8 uses one victory condition only:
 
-- Capital Victory: capture all enemy capitals.
-- Trade Victory: hold a target amount of trade income for several turns.
-- Network Victory: control a fixed percentage of city nodes and sea lanes.
+- Capital Victory: occupy all 3 capitals.
+
+Other systems such as trade, influence, ports, and resource points support expansion, but they do not directly win the match.
 
 ## Meta Progression
 
@@ -185,3 +185,8 @@ Use Victory Coins for strategy-altering talents:
 - Engineers repair faster.
 - Capitals project wider influence.
 
+Current MVP uses persistent talent points instead of spendable coins:
+
+- Claim 1 talent point after winning by occupying all 3 capitals.
+- Talent points and upgrades are saved locally and do not reset when starting a new game.
+- Talents improve large strategic systems such as capital scale, road construction, and harbor works.
