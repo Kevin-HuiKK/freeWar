@@ -59,6 +59,8 @@ export function createNewGame(talentUpgrades = {}, profileBoosts = {}) {
     };
   }
 
+  annexBonusCities(cities, routes, talents, boosts);
+
   for (const fid of FACTION_IDS) {
     armies[`army_${fid}_main`] = {
       id: `army_${fid}_main`,
@@ -99,9 +101,8 @@ function normalizeTalents(input = {}) {
 
 function normalizeProfileBoosts(input = {}) {
   return {
-    supplyChest: Math.max(0, Number(input.supplyChest || 0)),
-    volunteerCamp: Math.max(0, Number(input.volunteerCamp || 0)),
-    warBanner: Math.max(0, Number(input.warBanner || 0)),
+    retrofit: Math.max(0, Number(input.retrofit || 0)),
+    extraCity: Math.max(0, Number(input.extraCity || 0)),
   };
 }
 
@@ -110,10 +111,43 @@ function startingResourcesWithTalents(talents, boosts) {
   const merchants = talents.merchantGuild || 0;
   return {
     ...STARTING_RESOURCES,
-    gold: STARTING_RESOURCES.gold + harbor * 28 + merchants * 20 + boosts.supplyChest * 30,
-    food: STARTING_RESOURCES.food + boosts.supplyChest * 20,
+    gold: STARTING_RESOURCES.gold + harbor * 28 + merchants * 20,
+    food: STARTING_RESOURCES.food,
     labor: STARTING_RESOURCES.labor + harbor * 12,
   };
+}
+
+// Cities granted (with a road to their partner) by the "加一座初始城池" shop boost,
+// in priority order. Each entry is [cityToAnnex, alreadyOwnedPartner].
+const PLAYER_BONUS_CITIES = [
+  ['c_oldport', 'c_southgate'],
+  ['c_pineford', 'c_westmill'],
+];
+
+function annexBonusCities(cities, routes, talents, boosts) {
+  const count = Math.min(boosts.extraCity || 0, PLAYER_BONUS_CITIES.length);
+  for (let i = 0; i < count; i += 1) {
+    const [cityId, partnerId] = PLAYER_BONUS_CITIES[i];
+    const city = cities[cityId];
+    const partner = cities[partnerId];
+    if (!city || city.owner || !partner || partner.owner !== 'player') continue;
+    city.owner = 'player';
+    city.garrison.infantry = Math.max(1, city.garrison.infantry);
+    applyCityTalentBonuses(city, talents, boosts);
+    const id = candidateId(cityId, partnerId, 'road');
+    routes[id] = {
+      id,
+      from: [cityId, partnerId].sort()[0],
+      to: [cityId, partnerId].sort()[1],
+      owner: 'player',
+      kind: 'road',
+      level: 1,
+      status: 'active',
+      trade: true,
+      military: true,
+      progress: 0,
+    };
+  }
 }
 
 function applyCityTalentBonuses(city, talents, boosts) {
@@ -124,8 +158,6 @@ function applyCityTalentBonuses(city, talents, boosts) {
     city.garrison.guard += level;
     city.garrison.infantry += talents.openingInfantry || 0;
     city.garrison.cavalry += talents.openingCavalry || 0;
-    city.garrison.infantry += boosts.volunteerCamp * 2;
-    city.garrison.guard += boosts.volunteerCamp;
   }
   if (city.tags?.includes('port')) {
     city.garrison.fleet += talents.harborWorks || 0;

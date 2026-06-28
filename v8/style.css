@@ -184,6 +184,28 @@ button {
   background: linear-gradient(180deg, #8b6840, #5c3f24);
 }
 
+#claim-gift {
+  background: linear-gradient(180deg, #c9982f, #8a6512);
+}
+
+#claim-gift:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.link-btn {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 1px 6px;
+  margin-left: 6px;
+  border: 1px solid rgba(64, 43, 23, 0.4) !important;
+  border-radius: 2px;
+  background: transparent !important;
+  color: inherit !important;
+  font: 600 11px/1.2 "PingFang SC", sans-serif !important;
+  cursor: pointer;
+}
+
 .manual-panel,
 .map-paper,
 .rule-card,

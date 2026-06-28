@@ -1,7 +1,7 @@
 // V8 static map data. Coordinates use the 1920x1080 world space.
 
 export const WORLD = { width: 1920, height: 1080 };
-export const ACTIONS_PER_TURN = 2;
+export const ACTIONS_PER_TURN = 3;
 export const VICTORY_RULES = {
   capitalTarget: 3,
 };
@@ -175,9 +175,9 @@ export const MAP_MARKER_TYPES = {
 export const CITY_DEFS = [
   { id: 'c_aurea', name: '金鸢城', x: 570, y: 575, type: 'capital', level: 3, owner: 'player', tags: ['capital', 'trade'] },
   { id: 'c_westmill', name: '西磨镇', x: 420, y: 535, type: 'resource', level: 2, owner: 'player', tags: ['resource'] },
-  { id: 'c_pineford', name: '松渡', x: 320, y: 410, type: 'village', level: 1, owner: 'player', tags: [] },
+  { id: 'c_pineford', name: '松渡', x: 320, y: 410, type: 'village', level: 1, owner: null, tags: [] },
   { id: 'c_southgate', name: '南关', x: 560, y: 750, type: 'barracks', level: 2, owner: 'player', tags: ['barracks'] },
-  { id: 'c_oldport', name: '旧港', x: 785, y: 700, type: 'port', level: 2, owner: 'player', tags: ['port'] },
+  { id: 'c_oldport', name: '旧港', x: 785, y: 700, type: 'port', level: 2, owner: null, tags: ['port'] },
   { id: 'c_ashbridge', name: '灰桥', x: 745, y: 500, type: 'town', level: 2, owner: null, tags: [] },
   { id: 'c_larkfield', name: '云雀田', x: 655, y: 380, type: 'village', level: 1, owner: null, tags: [] },
   { id: 'c_copper', name: '铜市', x: 900, y: 575, type: 'resource', level: 2, owner: null, tags: ['resource', 'trade'] },
@@ -187,17 +187,17 @@ export const CITY_DEFS = [
   { id: 'c_redspire', name: '赤塔', x: 1340, y: 360, type: 'capital', level: 3, owner: 'crimson', tags: ['capital'] },
   { id: 'c_emberfall', name: '烬落', x: 1200, y: 315, type: 'barracks', level: 2, owner: 'crimson', tags: ['barracks'] },
   { id: 'c_scarletmine', name: '绯矿', x: 1465, y: 480, type: 'resource', level: 2, owner: 'crimson', tags: ['resource', 'trade'] },
-  { id: 'c_bloodford', name: '红渡', x: 1265, y: 525, type: 'town', level: 2, owner: 'crimson', tags: [] },
-  { id: 'c_eastgate', name: '东门堡', x: 1085, y: 470, type: 'fortress', level: 2, owner: 'crimson', tags: ['fortress'] },
-  { id: 'c_cinderport', name: '炭港', x: 1535, y: 655, type: 'port', level: 2, owner: 'crimson', tags: ['port'] },
-  { id: 'c_redfarm', name: '赤原', x: 1405, y: 235, type: 'village', level: 1, owner: 'crimson', tags: [] },
+  { id: 'c_bloodford', name: '红渡', x: 1265, y: 525, type: 'town', level: 2, owner: null, tags: [] },
+  { id: 'c_eastgate', name: '东门堡', x: 1085, y: 470, type: 'fortress', level: 2, owner: null, tags: ['fortress'] },
+  { id: 'c_cinderport', name: '炭港', x: 1535, y: 655, type: 'port', level: 2, owner: null, tags: ['port'] },
+  { id: 'c_redfarm', name: '赤原', x: 1405, y: 235, type: 'village', level: 1, owner: null, tags: [] },
   { id: 'c_blackhill', name: '黑丘', x: 1580, y: 360, type: 'town', level: 2, owner: null, tags: [] },
 
   { id: 'c_blueharbor', name: '青港', x: 1265, y: 805, type: 'capital', level: 3, owner: 'azure', tags: ['capital', 'port', 'trade'] },
   { id: 'c_tideglass', name: '潮璃', x: 1115, y: 760, type: 'resource', level: 2, owner: 'azure', tags: ['resource', 'trade'] },
   { id: 'c_reefwatch', name: '礁望', x: 1425, y: 835, type: 'port', level: 2, owner: 'azure', tags: ['port'] },
-  { id: 'c_mistden', name: '雾营', x: 1225, y: 660, type: 'barracks', level: 2, owner: 'azure', tags: ['barracks'] },
-  { id: 'c_saltmarket', name: '盐市', x: 1010, y: 875, type: 'resource', level: 2, owner: 'azure', tags: ['resource', 'trade'] },
+  { id: 'c_mistden', name: '雾营', x: 1225, y: 660, type: 'barracks', level: 2, owner: null, tags: ['barracks'] },
+  { id: 'c_saltmarket', name: '盐市', x: 1010, y: 875, type: 'resource', level: 2, owner: null, tags: ['resource', 'trade'] },
   { id: 'c_pearl', name: '珍珠岛', x: 1575, y: 865, type: 'village', level: 1, owner: null, tags: ['island'] },
 
   { id: 'c_crowisle', name: '鸦岛', x: 250, y: 815, type: 'port', level: 1, owner: null, tags: ['port', 'island'] },
@@ -263,16 +263,14 @@ export const ROUTE_CANDIDATES = roadPairs.map(([from, to]) => makeCandidate(from
 export const SEA_ROUTE_CANDIDATES = seaPairs.map(([from, to]) => makeCandidate(from, to, 'sea'));
 export const ALL_ROUTE_CANDIDATES = [...ROUTE_CANDIDATES, ...SEA_ROUTE_CANDIDATES];
 
+// Each faction opens with a capital and two adjacent cities (design: 首都 + 2 相邻城).
 export const INITIAL_ROUTES = [
   ['c_aurea', 'c_westmill', 'player', 'road'],
   ['c_aurea', 'c_southgate', 'player', 'road'],
-  ['c_southgate', 'c_oldport', 'player', 'road'],
   ['c_redspire', 'c_emberfall', 'crimson', 'road'],
   ['c_redspire', 'c_scarletmine', 'crimson', 'road'],
-  ['c_redspire', 'c_redfarm', 'crimson', 'road'],
   ['c_blueharbor', 'c_tideglass', 'azure', 'road'],
   ['c_blueharbor', 'c_reefwatch', 'azure', 'road'],
-  ['c_blueharbor', 'c_saltmarket', 'azure', 'road'],
 ];
 
 export const STARTING_RESOURCES = {

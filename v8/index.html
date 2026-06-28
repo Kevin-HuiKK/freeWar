@@ -12,7 +12,8 @@
     <section id="start-screen" class="start-screen">
       <div class="start-card">
         <header>
-          <span>作者 · le'o</span>
+          <span>作者 · le'o｜玩家：<b id="player-name">指挥官</b>
+            <button id="reroll-name" type="button" class="link-btn">换个名字</button></span>
           <h1>城市网络战争</h1>
           <p>开局拥有 1 座首都和若干相邻城市。通过连接、贸易和进攻，占领全部 3 个首都。</p>
         </header>
@@ -29,7 +30,7 @@
             <h2>开局模式</h2>
             <p>默认模式：标准大陆战役</p>
             <p>胜利条件：占领 3 个首都</p>
-            <p>训练不消耗行动点，扩张和进攻消耗行动点。</p>
+            <p>每回合 3 点行动点。只有进攻 / 切断敌方连接消耗行动点；建设、调兵、升级、训练都不消耗。</p>
           </section>
           <section>
             <h2>排行榜</h2>
@@ -46,6 +47,7 @@
         </div>
         <div class="start-actions">
           <button id="start-game" type="button">开始游戏</button>
+          <button id="claim-gift" type="button">🎁 领取礼包（+2 天贝武点）</button>
           <button type="button" data-start-jump="talent">天赋树</button>
           <button type="button" data-start-jump="rules">说明书</button>
           <button id="reset-profile" type="button">重置本机档案</button>
@@ -111,12 +113,12 @@
 
     <section class="rule-grid">
       <article class="rule-card wide">
-        <h2>2. 基本行动（基础 2 点行动）</h2>
+        <h2>2. 基本行动（基础 3 点行动）</h2>
         <ul>
-          <li>移动：将部队从一个己方城市移动到相邻连接城市。</li>
-          <li>占领：攻击相邻敌方城市，战斗胜利后占领。</li>
-          <li>建设：在己方城市建立道路或港口海路。</li>
-          <li>贸易：通过港口或连接路线获得资源与影响力。</li>
+          <li>占领：攻击相邻敌方城市，战斗胜利后占领。<b>消耗 1 行动点。</b></li>
+          <li>切断：破坏敌方连接使其孤立。<b>消耗 1 行动点。</b></li>
+          <li>移动：将部队从一个己方城市移动到相邻连接城市。不消耗行动点。</li>
+          <li>建设 / 升级：建立或升级道路、港口海路。不消耗行动点。</li>
           <li>招募：消耗资源招募部队，不消耗行动点。</li>
         </ul>
       </article>
@@ -158,7 +160,7 @@
           <li>城市成长</li>
           <li>敌方行动</li>
           <li>胜利检查</li>
-          <li>恢复基础 2 点行动，天赋可提高上限</li>
+          <li>恢复基础 3 点行动，天赋可提高上限</li>
         </ol>
       </article>
 

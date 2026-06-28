@@ -38,14 +38,18 @@ const statLosses = document.getElementById('stat-losses');
 const statShopGold = document.getElementById('stat-shop-gold');
 const rankList = document.getElementById('rank-list');
 const shopList = document.getElementById('shop-list');
+const playerNameEl = document.getElementById('player-name');
+const rerollNameBtn = document.getElementById('reroll-name');
+const claimGiftBtn = document.getElementById('claim-gift');
 
 const TALENT_STORAGE_KEY = 'freewar_v8_talent_state';
 const PROFILE_STORAGE_KEY = 'freewar_v8_profile';
 const SHOP_ITEMS = {
-  supplyChest: { name: '补给箱', cost: 5, desc: '下一局金币 +30、粮食 +20' },
-  volunteerCamp: { name: '民兵营', cost: 8, desc: '下一局主城步兵 +2、守卫 +1' },
-  warBanner: { name: '战旗', cost: 12, desc: '下一局进攻战力 +10%' },
+  retrofit: { name: '改造 +10%', cost: 15, desc: '下一局进攻战力 +10%', kind: 'boost' },
+  extraCity: { name: '加一座初始城池', cost: 30, desc: '下一局开局额外纳入 1 座相邻城市', kind: 'boost' },
+  talentPoint: { name: '购买一点天贝武点', cost: 100, desc: '立即获得 1 点永久天赋', kind: 'instant' },
 };
+const SHOP_BOOST_IDS = Object.keys(SHOP_ITEMS).filter(id => SHOP_ITEMS[id].kind === 'boost');
 let talentState = loadTalentState();
 let profileState = loadProfileState();
 let state = createNewGame(talentState.upgrades, profileState.boosts);
@@ -157,16 +161,18 @@ function addNeighborActions(root, city) {
     const route = option.existing;
     if (target.owner === 'player' && route?.status === 'active') {
       btn.innerHTML = `<span>调兵至 ${target.name}</span><small>${route.kind === 'sea' ? '海路' : '道路'} Lv.${route.level}</small>`;
-      btn.addEventListener('click', () => runPlayerAction(() => moveArmy(state, 'player', city.id, target.id)));
+      btn.dataset.freeAction = 'true';
+      btn.addEventListener('click', () => runPlayerAction(() => moveArmy(state, 'player', city.id, target.id), { consumesAction: false }));
     } else if (target.owner && target.owner !== 'player' && route?.status === 'active') {
-      btn.innerHTML = `<span>进攻 ${target.name}</span><small>${FACTIONS[target.owner].shortName} · ${route.kind === 'sea' ? '需舰队' : '陆路'}</small>`;
+      btn.innerHTML = `<span>进攻 ${target.name}</span><small>${FACTIONS[target.owner].shortName} · ${route.kind === 'sea' ? '需舰队' : '陆路'} · 消耗行动点</small>`;
       btn.addEventListener('click', () => runPlayerAction(() => attackCity(state, 'player', city.id, target.id)));
     } else {
       const check = canBuildRoute(state, 'player', city.id, target.id);
       btn.innerHTML = `<span>${target.owner === 'player' ? '建立连接' : '连接并纳入'} ${target.name}</span><small>${option.kind === 'sea' ? '海路' : '道路'} · ${costText(adjustedCost(state, option.buildCost, 'player'))}</small>`;
       btn.disabled = !check.ok;
       btn.title = check.msg;
-      btn.addEventListener('click', () => runPlayerAction(() => buildRoute(state, 'player', city.id, target.id)));
+      btn.dataset.freeAction = 'true';
+      btn.addEventListener('click', () => runPlayerAction(() => buildRoute(state, 'player', city.id, target.id), { consumesAction: false }));
     }
     group.appendChild(btn);
   }
@@ -195,18 +201,20 @@ function renderRoutePanel(route) {
     upgrade.type = 'button';
     upgrade.disabled = !check.ok;
     upgrade.textContent = check.ok ? '升级连接' : check.msg;
-    upgrade.addEventListener('click', () => runPlayerAction(() => upgradeRoute(state, 'player', route.id)));
+    upgrade.dataset.freeAction = 'true';
+    upgrade.addEventListener('click', () => runPlayerAction(() => upgradeRoute(state, 'player', route.id), { consumesAction: false }));
     actions.appendChild(upgrade);
     const repair = document.createElement('button');
     repair.type = 'button';
     repair.disabled = route.status !== 'broken';
     repair.textContent = '修复连接';
-    repair.addEventListener('click', () => runPlayerAction(() => repairRoute(state, 'player', route.id)));
+    repair.dataset.freeAction = 'true';
+    repair.addEventListener('click', () => runPlayerAction(() => repairRoute(state, 'player', route.id), { consumesAction: false }));
     actions.appendChild(repair);
   } else {
     const cut = document.createElement('button');
     cut.type = 'button';
-    cut.textContent = '切断敌方连接';
+    cut.textContent = '切断敌方连接（消耗行动点）';
     cut.addEventListener('click', () => runPlayerAction(() => raidRoute(state, 'player', route.id)));
     actions.appendChild(cut);
   }
@@ -354,8 +362,19 @@ function loadProfileState() {
   }
 }
 
+const NAME_PREFIX = ['赤', '金', '青', '苍', '幽', '雷', '霜', '烈', '夜', '银'];
+const NAME_CORE = ['鹰', '狼', '龙', '隼', '虎', '鲸', '鸦', '麟', '熊', '蛟'];
+const NAME_TITLE = ['统帅', '将军', '督军', '舰长', '总督', '军师'];
+
+function randomName() {
+  const pick = list => list[Math.floor(Math.random() * list.length)];
+  return `${pick(NAME_PREFIX)}${pick(NAME_CORE)}${pick(NAME_TITLE)}`;
+}
+
 function normalizeProfileState(input) {
   return {
+    name: typeof input?.name === 'string' && input.name.trim() ? input.name : randomName(),
+    giftClaimed: Boolean(input?.giftClaimed),
     wins: Math.max(0, Number(input?.wins || 0)),
     losses: Math.max(0, Number(input?.losses || 0)),
     shopGold: Math.max(0, Number(input?.shopGold ?? 5)),
@@ -365,7 +384,7 @@ function normalizeProfileState(input) {
 }
 
 function normalizeBoosts(input = {}) {
-  return Object.fromEntries(Object.keys(SHOP_ITEMS).map(id => [id, Math.max(0, Number(input?.[id] || 0))]));
+  return Object.fromEntries(SHOP_BOOST_IDS.map(id => [id, Math.max(0, Number(input?.[id] || 0))]));
 }
 
 function saveProfileState() {
@@ -378,15 +397,20 @@ function updateProfileForWinner() {
   profileState.recordedGames = [...profileState.recordedGames.slice(-19), state.turn + ':' + state.winner];
   if (state.winner === 'player') {
     profileState.wins += 1;
-    profileState.shopGold += 5 + (talentState.upgrades.talentDividend >= TALENTS.talentDividend.max ? 2 : 0);
+    profileState.shopGold += 25 + (talentState.upgrades.talentDividend >= TALENTS.talentDividend.max ? 2 : 0);
   } else {
     profileState.losses += 1;
-    profileState.shopGold += 1;
+    profileState.shopGold += 10;
   }
   saveProfileState();
 }
 
 function renderProfile() {
+  if (playerNameEl) playerNameEl.textContent = profileState.name;
+  if (claimGiftBtn) {
+    claimGiftBtn.disabled = profileState.giftClaimed;
+    claimGiftBtn.textContent = profileState.giftClaimed ? '🎁 礼包已领取' : '🎁 领取礼包（+2 天贝武点）';
+  }
   if (statWins) statWins.textContent = profileState.wins;
   if (statLosses) statLosses.textContent = profileState.losses;
   if (statShopGold) statShopGold.textContent = profileState.shopGold;
@@ -395,7 +419,7 @@ function renderProfile() {
     const entries = [
       ['AAA', 12345],
       ['王冕', 9000],
-      ['本机玩家', Math.max(0, score)],
+      [profileState.name, Math.max(0, score)],
       ['作者', 6000],
     ].sort((a, b) => b[1] - a[1]).slice(0, 4);
     rankList.innerHTML = entries.map(([name, value]) => `<li>${escapeHtml(name)} · ${value}</li>`).join('');
@@ -406,7 +430,8 @@ function renderShop() {
   if (!shopList) return;
   shopList.innerHTML = Object.entries(SHOP_ITEMS).map(([id, item]) => {
     const queued = profileState.boosts[id] || 0;
-    const disabled = profileState.shopGold < item.cost;
+    const atLimit = id === 'extraCity' && queued >= EXTRA_CITY_LIMIT;
+    const disabled = profileState.shopGold < item.cost || atLimit;
     return `
       <button type="button" data-shop-item="${id}" ${disabled ? 'disabled' : ''}>
         <span>${item.name} · ${item.cost} 金币${queued ? ` · 待用 ${queued}` : ''}</span>
@@ -419,9 +444,23 @@ function renderShop() {
   }
 }
 
+const EXTRA_CITY_LIMIT = 2;
+
 function buyShopItem(itemId) {
   const item = SHOP_ITEMS[itemId];
   if (!item || profileState.shopGold < item.cost) return;
+  if (item.kind === 'instant') {
+    profileState.shopGold -= item.cost;
+    if (itemId === 'talentPoint') {
+      talentState.points += 1;
+      saveTalentState();
+      addLog(state, `商店购买：${item.name}，已获得 1 点永久天赋。`);
+    }
+    saveProfileState();
+    renderHUD();
+    return;
+  }
+  if (itemId === 'extraCity' && (profileState.boosts.extraCity || 0) >= EXTRA_CITY_LIMIT) return;
   profileState.shopGold -= item.cost;
   profileState.boosts[itemId] = (profileState.boosts[itemId] || 0) + 1;
   saveProfileState();
@@ -519,6 +558,20 @@ for (const button of document.querySelectorAll('[data-start-jump]')) {
     resize();
   });
 }
+rerollNameBtn?.addEventListener('click', () => {
+  profileState.name = randomName();
+  saveProfileState();
+  renderHUD();
+});
+claimGiftBtn?.addEventListener('click', () => {
+  if (profileState.giftClaimed) return;
+  profileState.giftClaimed = true;
+  talentState.points += 2;
+  saveProfileState();
+  saveTalentState();
+  addLog(state, '礼包已领取：获得 2 点永久天赋。');
+  renderHUD();
+});
 resetProfileBtn?.addEventListener('click', () => {
   profileState = normalizeProfileState({});
   talentState = normalizeTalentState({});

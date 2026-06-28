@@ -64,7 +64,7 @@ export function attackCity(state, factionId, fromCityId, targetCityId) {
   if (route.kind === 'sea' && from.garrison.fleet <= 0) return { ok: false, msg: '跨海进攻需要舰队' };
   const attackingUnits = { ...from.garrison };
   const attackTalent = factionId === 'player' ? (state.talents?.assaultDrill || 0) : 0;
-  const attackBoost = factionId === 'player' ? (state.profileBoosts?.warBanner || 0) : 0;
+  const attackBoost = factionId === 'player' ? (state.profileBoosts?.retrofit || 0) : 0;
   const attackPower = armyPower(attackingUnits, target.type === 'fortress' || target.type === 'capital' ? 'siege' : 'field') * (1 + attackTalent * 0.12 + attackBoost * 0.1);
   if (attackPower < 2) return { ok: false, msg: '出发城市没有可用部队' };
   const defensePower = target.defense + armyPower(target.garrison, 'defense') + target.level * 2;
