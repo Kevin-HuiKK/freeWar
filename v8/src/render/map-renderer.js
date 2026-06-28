@@ -291,7 +291,45 @@ function drawCities(ctx, state) {
     ctx.font = '700 20px "PingFang SC", system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(city.name, city.x, city.y + r + 30);
+
+    drawCityStats(ctx, city, r, owner);
   }
+}
+
+function garrisonTotal(city) {
+  return Object.values(city.garrison || {}).reduce((sum, value) => sum + (value || 0), 0);
+}
+
+function drawCityStats(ctx, city, r, owner) {
+  const garrison = garrisonTotal(city);
+  const label = `防 ${city.defense} · 兵 ${garrison}`;
+  const cx = city.x;
+  const cy = city.y + r + 52;
+  ctx.font = '800 18px "PingFang SC", system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const w = ctx.measureText(label).width;
+  const padX = 9;
+  const h = 25;
+  roundRectPath(ctx, cx - w / 2 - padX, cy - h / 2, w + padX * 2, h, 7);
+  ctx.fillStyle = 'rgba(36, 27, 19, 0.82)';
+  ctx.fill();
+  ctx.strokeStyle = owner ? owner.color : 'rgba(232, 221, 195, 0.55)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = '#f4e9cd';
+  ctx.fillText(label, cx, cy + 1);
+}
+
+function roundRectPath(ctx, x, y, w, h, radius) {
+  const rad = Math.min(radius, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rad, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rad);
+  ctx.arcTo(x + w, y + h, x, y + h, rad);
+  ctx.arcTo(x, y + h, x, y, rad);
+  ctx.arcTo(x, y, x + w, y, rad);
+  ctx.closePath();
 }
 
 function drawSelection(ctx, state) {
