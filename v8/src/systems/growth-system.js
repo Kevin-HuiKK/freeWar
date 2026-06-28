@@ -43,6 +43,8 @@ export function applyCityGrowth(state) {
       city.growth -= threshold;
       city.level += 1;
       city.defense += 3;
+      city.maxHp += 2;
+      city.hp = Math.min(city.maxHp, city.hp + 2);
       city.garrison.guard += 1;
       addLog(state, `${city.name} 升级为 Lv.${city.level}`);
     }

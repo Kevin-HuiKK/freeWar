@@ -25,17 +25,24 @@ export function createNewGame(talentUpgrades = {}, profileBoosts = {}) {
       alive: true,
       resources: fid === 'player' ? startingResourcesWithTalents(talents, boosts) : { ...STARTING_RESOURCES },
       talents: [],
+      builtOnce: {},
     };
   }
 
   for (const def of CITY_DEFS) {
     const type = CITY_TYPES[def.type];
+    const level = def.level || 1;
+    const maxHp = type.hp + level * 2;
     cities[def.id] = {
       ...def,
       owner: def.owner || null,
-      level: def.level || 1,
+      level,
       growth: 0,
-      defense: type.defense + (def.level || 1) * 2,
+      defense: type.defense + level * 2,
+      maxHp,
+      hp: maxHp,
+      building: null,
+      burning: 0,
       siege: false,
       isolated: false,
       garrison: startingGarrison(def),
@@ -166,16 +173,14 @@ function applyCityTalentBonuses(city, talents, boosts) {
 }
 
 function startingGarrison(def) {
-  const empty = { infantry: 0, cavalry: 0, engineer: 0, siege: 0, guard: 0, fleet: 0 };
-  if (!def.owner) return empty;
-  const base = def.type === 'capital' ? 4 : 1;
-  return {
-    ...empty,
-    infantry: base,
-    guard: def.type === 'capital' || def.type === 'fortress' ? 2 : 0,
-    cavalry: def.type === 'barracks' ? 1 : 0,
-    fleet: def.tags?.includes('port') ? 1 : 0,
-  };
+  const g = emptyGarrison();
+  if (!def.owner) return g;
+  const isCapital = def.type === 'capital';
+  g.infantry = isCapital ? 4 : 1;
+  g.guard = isCapital || def.type === 'fortress' ? 2 : 0;
+  g.cavalry = def.type === 'barracks' ? 1 : 0;
+  g.fleet = def.tags?.includes('port') ? 1 : 0;
+  return g;
 }
 
 export function cityById(state, cityId) {
@@ -243,16 +248,20 @@ export function totalUnits(units) {
   return Object.values(units).reduce((sum, value) => sum + (value || 0), 0);
 }
 
-export function armyPower(units, mode = 'field') {
+export function emptyGarrison() {
+  return Object.fromEntries(Object.keys(UNIT_TYPES).map(id => [id, 0]));
+}
+
+// V1.0: 'attack' sums 攻击, 'defense' sums 防守. 'siege' sums siege-unit attack
+// (used for defense penetration in the combat formula).
+export function armyPower(units, mode = 'attack') {
   let total = 0;
   for (const [unitId, count] of Object.entries(units)) {
     const unit = UNIT_TYPES[unitId];
     if (!unit || !count) continue;
-    total += unit.power * count;
-    if (mode === 'siege') total += (unit.siege || 0) * count;
-    if (mode === 'route') total += (unit.routeDamage || 0) * count;
-    if (mode === 'naval') total += (unit.naval || 0) * count;
-    if (mode === 'defense') total += (unit.defense || 0) * count;
+    if (mode === 'attack') total += (unit.attack || 0) * count;
+    else if (mode === 'defense') total += (unit.defense || 0) * count;
+    else if (mode === 'siege') total += (unit.siege || 0) * count;
   }
   return total;
 }

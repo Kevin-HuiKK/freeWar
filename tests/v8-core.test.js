@@ -58,13 +58,19 @@ describe('v8 city network core', () => {
     expect(after).toBeGreaterThan(base);
   });
 
-  it('only wins by occupying three capitals', () => {
+  it('wins by occupying every enemy city (conquest)', () => {
     const state = createNewGame();
-    state.factions.player.resources.influence = 20;
     expect(checkVictory(state)).toBe(null);
-    cityById(state, 'c_redspire').owner = 'player';
-    cityById(state, 'c_blueharbor').owner = 'player';
+    for (const city of Object.values(state.cities)) {
+      if (city.owner && city.owner !== 'player') city.owner = 'player';
+    }
     expect(checkVictory(state)).toBe('player');
+  });
+
+  it('declares a draw at the draw turn', () => {
+    const state = createNewGame();
+    state.turn = 80;
+    expect(checkVictory(state)).toBe('draw');
   });
 
   it('applies persistent talent bonuses to new games', () => {

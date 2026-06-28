@@ -1,10 +1,10 @@
 import { actionLimit, addLog, consumeAction, createNewGame, cityById, resetActions, resourceCities, routeById } from './core/game-state.js';
-import { CITY_TYPES, FACTIONS, RESOURCE_NAMES, TALENT_BRANCHES, TALENTS, UNIT_TYPES, VICTORY_RULES } from './data/map-data.js';
+import { BUILDINGS, CITY_TYPES, FACTIONS, RESOURCE_NAMES, TALENT_BRANCHES, TALENTS, UNIT_TYPES, VICTORY_RULES } from './data/map-data.js';
 import { renderMap, fitCamera } from './render/map-renderer.js';
 import { createInputController } from './ui/input-controller.js';
 import { applyAllIncome } from './systems/economy-system.js';
 import { applyCityGrowth } from './systems/growth-system.js';
-import { attackCity, canTrainUnit, checkVictory, moveArmy, raidRoute, trainUnit } from './systems/combat-system.js';
+import { attackCity, buildBuilding, canBuildBuilding, canTrainUnit, checkVictory, forecastAttack, moveArmy, raidRoute, tickCities, trainUnit } from './systems/combat-system.js';
 import {
   buildRoute,
   canBuildRoute,
@@ -122,9 +122,11 @@ function renderCityPanel(city) {
       <span>Lv.${city.level}</span>
       <span style="color:${owner?.color || '#c8b99a'}">${owner?.shortName || '中立'}</span>
     </div>
-    <div class="meter"><i style="width:${Math.min(100, city.growth)}%"></i></div>
+    <div class="hpbar"><i style="width:${Math.round(Math.max(0, city.hp) / city.maxHp * 100)}%"></i></div>
     <dl>
-      <dt>防御</dt><dd>${city.defense}${city.siege ? ' · 围城' : ''}${city.isolated ? ' · 孤立' : ''}</dd>
+      <dt>血量</dt><dd>${Math.max(0, Math.ceil(city.hp))}/${city.maxHp}${city.burning ? ` · 🔥燃烧${city.burning}` : ''}</dd>
+      <dt>防御</dt><dd>${city.defense}（防守值，1 抵 2 攻）${city.siege ? ' · 围城' : ''}${city.isolated ? ' · 孤立' : ''}</dd>
+      <dt>建筑</dt><dd>${city.building ? BUILDINGS[city.building].name : '无'}</dd>
       <dt>驻军</dt><dd>${unitRows}</dd>
     </dl>
     <div class="actions" id="city-actions"></div>
@@ -135,25 +137,54 @@ function renderCityPanel(city) {
     return;
   }
 
-  addTrainButtons(actions, city);
   addNeighborActions(actions, city);
+  addBuildingButtons(actions, city);
+  addTrainButtons(actions, city);
   applyActionLock(actions);
 }
 
+const TRAIN_GROUPS = [
+  { name: '步兵营', ids: ['infantry', 'charger', 'cavalry', 'guard', 'engineer'] },
+  { name: '机械化', ids: ['apc', 'tank', 'siege', 'rocket', 'engvehicle', 'flamer'] },
+  { name: '空军 / 战略', ids: ['fighter', 'bomber', 'aaa', 'missile', 'nuke', 'hbomb'] },
+  { name: '工事 / 后勤', ids: ['bunker', 'miner', 'civilian', 'fleet'] },
+];
+
 function addTrainButtons(root, city) {
+  for (const groupDef of TRAIN_GROUPS) {
+    const group = document.createElement('div');
+    group.className = 'action-group';
+    group.innerHTML = `<h3>训练 · ${groupDef.name}</h3>`;
+    for (const unitId of groupDef.ids) {
+      const unit = UNIT_TYPES[unitId];
+      const check = canTrainUnit(state, 'player', city.id, unitId);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.disabled = !check.ok;
+      btn.title = check.msg;
+      btn.innerHTML = `<span>${unit.icon} ${unit.name} <i class="stat">攻${unit.attack}/防${unit.defense}</i></span><small>${costText(unit.cost)}</small>`;
+      btn.dataset.freeAction = 'true';
+      btn.addEventListener('click', () => runPlayerAction(() => trainUnit(state, 'player', city.id, unitId), { consumesAction: false }));
+      group.appendChild(btn);
+    }
+    root.appendChild(group);
+  }
+}
+
+function addBuildingButtons(root, city) {
   const group = document.createElement('div');
   group.className = 'action-group';
-  group.innerHTML = '<h3>训练</h3>';
-  for (const unitId of Object.keys(UNIT_TYPES)) {
-    const unit = UNIT_TYPES[unitId];
-    const check = canTrainUnit(state, 'player', city.id, unitId);
+  group.innerHTML = '<h3>建筑</h3>';
+  for (const buildingId of Object.keys(BUILDINGS)) {
+    const building = BUILDINGS[buildingId];
+    const check = canBuildBuilding(state, 'player', city.id, buildingId);
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.disabled = !check.ok;
-    btn.title = check.msg;
-    btn.innerHTML = `<span>${unit.icon} ${unit.name}</span><small>${costText(unit.cost)}</small>`;
+    btn.title = check.ok ? building.desc : check.msg;
+    btn.innerHTML = `<span>${building.icon} 建造 ${building.name}</span><small>${costText(building.cost)}</small>`;
     btn.dataset.freeAction = 'true';
-    btn.addEventListener('click', () => runPlayerAction(() => trainUnit(state, 'player', city.id, unitId), { consumesAction: false }));
+    btn.addEventListener('click', () => runPlayerAction(() => buildBuilding(state, 'player', city.id, buildingId), { consumesAction: false }));
     group.appendChild(btn);
   }
   root.appendChild(group);
@@ -176,7 +207,9 @@ function addNeighborActions(root, city) {
     } else if (target.owner && target.owner !== 'player') {
       const seaAttack = option.kind === 'sea';
       const canAttack = !seaAttack || city.garrison.fleet > 0;
-      btn.innerHTML = `<span>进攻 ${target.name}</span><small>${FACTIONS[target.owner].shortName} · ${seaAttack ? '需舰队' : '陆路'} · 消耗行动点</small>`;
+      const fc = forecastAttack(state, 'player', city.id, target.id);
+      const preview = fc ? (fc.damage <= 0 ? `被挡下(攻${fc.attack}≤防${fc.blocked})` : fc.willCapture ? `可攻占! 伤害${fc.damage}` : `伤害${fc.damage}·敌血${Math.max(0, Math.ceil(fc.hp))}`) : '';
+      btn.innerHTML = `<span>进攻 ${target.name}</span><small>${FACTIONS[target.owner].shortName} · ${preview} · 消耗行动点</small>`;
       btn.disabled = !canAttack;
       btn.title = canAttack ? '' : '跨海进攻需要舰队';
       btn.addEventListener('click', () => runPlayerAction(() => attackCity(state, 'player', city.id, target.id)));
@@ -246,15 +279,17 @@ function renderBanner() {
   }
   updateProfileForWinner();
   banner.hidden = false;
-  if (state.winner === 'player') {
+  if (state.winner === 'draw') {
+    banner.textContent = `平局：到达第 ${VICTORY_RULES.drawTurn} 回合仍未分出胜负。`;
+  } else if (state.winner === 'player') {
     banner.innerHTML = `
-      <strong>胜利：你占领了 3 个首都。</strong>
+      <strong>胜利：你占领了全部敌方城市。</strong>
       <button id="claim-talent" type="button" ${state.rewardClaimed ? 'disabled' : ''}>${state.rewardClaimed ? '已领取天赋点' : '领取 1 点天赋'}</button>
     `;
     const claim = document.getElementById('claim-talent');
     claim?.addEventListener('click', claimTalentReward);
   } else {
-    banner.textContent = `战败：${FACTIONS[state.winner].name} 占领了 3 个首都。`;
+    banner.textContent = `战败：${FACTIONS[state.winner].name} 统一了战场。`;
   }
 }
 
@@ -282,6 +317,7 @@ function endTurn() {
   if (state.winner) return;
   applyAllIncome(state);
   applyCityGrowth(state);
+  tickCities(state);
   checkVictory(state);
   if (state.winner) {
     renderHUD();
@@ -290,8 +326,8 @@ function endTurn() {
   for (const fid of Object.keys(FACTIONS)) {
     if (fid !== 'player') playAITurn(state, fid);
   }
-  checkVictory(state);
   state.turn += 1;
+  checkVictory(state);
   resetActions(state);
   renderHUD();
 }
@@ -311,8 +347,12 @@ function escapeHtml(value) {
 
 function renderObjectives() {
   if (!objectiveList) return;
+  const all = Object.values(state.cities).length;
+  const mine = Object.values(state.cities).filter(c => c.owner === 'player').length;
+  const enemy = Object.values(state.cities).filter(c => c.owner && c.owner !== 'player').length;
   objectiveList.innerHTML = `
-    <li>占领 3 个首都：${ownedCapitalCount('player')}/${VICTORY_RULES.capitalTarget}</li>
+    <li>占领全部敌方城市获胜：己方 ${mine} / 共 ${all}（敌方剩 ${enemy}）</li>
+    <li>第 ${VICTORY_RULES.drawTurn} 回合自动平局（当前回合 ${state.turn}）</li>
   `;
 }
 
@@ -403,6 +443,8 @@ function updateProfileForWinner() {
   if (state.winner === 'player') {
     profileState.wins += 1;
     profileState.shopGold += 25 + (talentState.upgrades.talentDividend >= TALENTS.talentDividend.max ? 2 : 0);
+  } else if (state.winner === 'draw') {
+    profileState.shopGold += 15;
   } else {
     profileState.losses += 1;
     profileState.shopGold += 10;

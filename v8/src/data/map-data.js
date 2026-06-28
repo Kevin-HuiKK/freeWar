@@ -3,7 +3,9 @@
 export const WORLD = { width: 1920, height: 1080 };
 export const ACTIONS_PER_TURN = 3;
 export const VICTORY_RULES = {
-  capitalTarget: 3,
+  // V1.0: occupy every enemy city to win; auto-draw after drawTurn.
+  mode: 'conquest',
+  drawTurn: 80,
 };
 
 export const TALENTS = {
@@ -135,26 +137,52 @@ export const FACTIONS = {
 
 export const FACTION_IDS = Object.keys(FACTIONS);
 
+// hp = 城市血量初值（按等级再加成，见 game-state）。defense = 基础防守值。
 export const CITY_TYPES = {
-  village: { name: '村镇', radius: 14, defense: 2, tax: 4, growth: 4 },
-  town: { name: '市镇', radius: 17, defense: 4, tax: 7, growth: 5 },
-  city: { name: '城市', radius: 21, defense: 7, tax: 11, growth: 6 },
-  great: { name: '大城', radius: 25, defense: 10, tax: 16, growth: 7 },
-  capital: { name: '首都', radius: 31, defense: 14, tax: 20, growth: 8 },
-  port: { name: '港口', radius: 21, defense: 6, tax: 10, growth: 6 },
-  barracks: { name: '军营城', radius: 21, defense: 8, tax: 9, growth: 5 },
-  trade: { name: '商贸城', radius: 21, defense: 6, tax: 14, growth: 7 },
-  resource: { name: '资源点', radius: 19, defense: 5, tax: 12, growth: 6 },
-  fortress: { name: '要塞', radius: 22, defense: 13, tax: 8, growth: 4 },
+  village: { name: '村镇', radius: 14, defense: 2, tax: 4, growth: 4, hp: 6 },
+  town: { name: '市镇', radius: 17, defense: 4, tax: 7, growth: 5, hp: 9 },
+  city: { name: '城市', radius: 21, defense: 7, tax: 11, growth: 6, hp: 12 },
+  great: { name: '大城', radius: 25, defense: 10, tax: 16, growth: 7, hp: 16 },
+  capital: { name: '首都', radius: 31, defense: 14, tax: 20, growth: 8, hp: 22 },
+  port: { name: '港口', radius: 21, defense: 6, tax: 10, growth: 6, hp: 10 },
+  barracks: { name: '军营城', radius: 21, defense: 8, tax: 9, growth: 5, hp: 11 },
+  trade: { name: '商贸城', radius: 21, defense: 6, tax: 14, growth: 7, hp: 11 },
+  resource: { name: '资源点', radius: 19, defense: 5, tax: 12, growth: 6, hp: 11 },
+  fortress: { name: '要塞', radius: 22, defense: 13, tax: 8, growth: 4, hp: 18 },
 };
 
+// V1.0 roster. attack/defense per the rules doc; flags carry skills.
+// req: training prerequisite — null | 'barracks' | 'capital' | 'port'.
+// 'barracks' is satisfied by barracks-tagged cities OR capitals.
 export const UNIT_TYPES = {
-  infantry: { name: '步兵', icon: '♟', cost: { gold: 14, food: 4 }, power: 2, siege: 1, speed: 1 },
-  cavalry: { name: '骑兵', icon: '♞', cost: { gold: 24, food: 6 }, power: 3, routeDamage: 2, speed: 2 },
-  engineer: { name: '工兵', icon: '⚒', cost: { gold: 20, labor: 10 }, power: 1, repair: 2, speed: 1 },
-  siege: { name: '攻城车', icon: '▣', cost: { gold: 38, labor: 16 }, power: 5, siege: 5, speed: 1 },
-  guard: { name: '守卫', icon: '◆', cost: { gold: 18, food: 5 }, power: 2, defense: 3, speed: 1 },
-  fleet: { name: '舰队', icon: '⚓', cost: { gold: 42, labor: 14 }, power: 5, naval: 4, speed: 2 },
+  infantry: { name: '步兵', icon: '♟', cost: { gold: 12, food: 4 }, attack: 1, defense: 0, req: null },
+  charger: { name: '冲锋兵', icon: '♙', cost: { gold: 16, food: 5 }, attack: 2, defense: 0, req: null },
+  cavalry: { name: '骑兵', icon: '♞', cost: { gold: 22, food: 6 }, attack: 2, defense: 0, req: 'barracks' },
+  guard: { name: '守卫', icon: '◆', cost: { gold: 16, food: 5 }, attack: 0, defense: 1, req: null },
+  engineer: { name: '工兵', icon: '⚒', cost: { gold: 18, labor: 8 }, attack: 0, defense: 1, heal: 1, req: null },
+  miner: { name: '矿工', icon: '⛏', cost: { gold: 20, labor: 4 }, attack: 0, defense: 0, miner: 6, req: null },
+  civilian: { name: '普通人', icon: '☻', cost: { gold: 6 }, attack: 0, defense: 0, labor: 2, req: null },
+  apc: { name: '装甲车', icon: '▤', cost: { gold: 28, labor: 8 }, attack: 3, defense: 0, armor: true, req: 'barracks' },
+  tank: { name: '坦克', icon: '▦', cost: { gold: 46, labor: 16 }, attack: 4, defense: 0, armor: true, req: 'barracks' },
+  siege: { name: '攻城车', icon: '▣', cost: { gold: 40, labor: 16 }, attack: 5, defense: 0, siege: 5, req: 'barracks' },
+  rocket: { name: '火箭车', icon: '➹', cost: { gold: 54, labor: 20 }, attack: 6, defense: 0, ranged: true, req: 'barracks' },
+  engvehicle: { name: '工程车', icon: '⛭', cost: { gold: 30, labor: 18 }, attack: 0, defense: 3, req: 'barracks' },
+  flamer: { name: '喷火兵', icon: '♨', cost: { gold: 34, food: 8 }, attack: 4, defense: 0, burn: 4, req: 'barracks' },
+  fighter: { name: '战斗机', icon: '✈', cost: { gold: 50, labor: 18 }, attack: 5, defense: 0, air: true, req: 'capital' },
+  bomber: { name: '轰炸机', icon: '🛩', cost: { gold: 70, labor: 26 }, attack: 8, defense: 0, bomber: true, req: 'capital' },
+  aaa: { name: '防空导弹', icon: '⌖', cost: { gold: 40, labor: 16 }, attack: 0, defense: 0, intercept: true, req: 'capital' },
+  missile: { name: '导弹', icon: '⇡', cost: { gold: 120, labor: 40 }, attack: 10, defense: 0, strategic: 'missile', req: 'capital' },
+  nuke: { name: '核弹', icon: '☢', cost: { gold: 200, labor: 60 }, attack: 15, defense: 0, strategic: 'nuke', req: 'capital' },
+  hbomb: { name: '氢弹', icon: '✸', cost: { gold: 320, labor: 90 }, attack: 25, defense: 0, strategic: 'super', req: 'capital' },
+  bunker: { name: '地堡', icon: '⬢', cost: { gold: 60, labor: 30 }, attack: 0, defense: 90, oncePerGame: true, req: null },
+  fleet: { name: '舰队', icon: '⚓', cost: { gold: 42, labor: 14 }, attack: 3, defense: 0, naval: true, req: 'port' },
+};
+
+// Attack-capable unit ids (contribute to a city's offensive power).
+export const ATTACK_UNIT_IDS = Object.keys(UNIT_TYPES).filter(id => UNIT_TYPES[id].attack > 0);
+
+export const BUILDINGS = {
+  nuclear: { id: 'nuclear', name: '核电站', icon: '☢', cost: { gold: 90, labor: 40 }, desc: '每回合金币×20；占用后该城无法训练单位（持续到本局结束）' },
 };
 
 export const RESOURCE_NAMES = {

@@ -1,4 +1,4 @@
-import { CITY_TYPES } from '../data/map-data.js';
+import { CITY_TYPES, UNIT_TYPES } from '../data/map-data.js';
 import { activeRoutes, addLog, cityById, ownedCities } from '../core/game-state.js';
 import { connectedToCapital } from './route-system.js';
 
@@ -8,9 +8,13 @@ export function calculateIncome(state, factionId) {
     const type = CITY_TYPES[city.type];
     const connected = connectedToCapital(state, factionId, city.id);
     const isolationMul = connected ? 1 : 0.45;
-    income.gold += Math.round((type.tax + city.level * 4) * isolationMul);
+    let cityGold = (type.tax + city.level * 4) * isolationMul;
+    if (city.building === 'nuclear') cityGold *= 20; // 核电站：金币 ×20
+    cityGold += (city.garrison.miner || 0) * (UNIT_TYPES.miner.miner || 0); // 矿工增产
+    income.gold += Math.round(cityGold);
     income.food += Math.round((4 + city.level * 2) * isolationMul);
     income.labor += Math.round((3 + city.level * 2 + (city.tags.includes('barracks') ? 2 : 0)) * isolationMul);
+    income.labor += (city.garrison.civilian || 0) * (UNIT_TYPES.civilian.labor || 0); // 普通人提供劳力
     income.influence += connected ? Math.max(1, Math.floor(city.level / 2)) : 0;
   }
   for (const route of activeRoutes(state, factionId)) {
