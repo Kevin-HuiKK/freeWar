@@ -50,6 +50,16 @@ const SHOP_ITEMS = {
   talentPoint: { name: '购买一点天贝武点', cost: 100, desc: '立即获得 1 点永久天赋', kind: 'instant' },
 };
 const SHOP_BOOST_IDS = Object.keys(SHOP_ITEMS).filter(id => SHOP_ITEMS[id].kind === 'boost');
+const EXTRA_CITY_LIMIT = 2;
+const NAME_PREFIX = ['赤', '金', '青', '苍', '幽', '雷', '霜', '烈', '夜', '银'];
+const NAME_CORE = ['鹰', '狼', '龙', '隼', '虎', '鲸', '鸦', '麟', '熊', '蛟'];
+const NAME_TITLE = ['统帅', '将军', '督军', '舰长', '总督', '军师'];
+
+function randomName() {
+  const pick = list => list[Math.floor(Math.random() * list.length)];
+  return `${pick(NAME_PREFIX)}${pick(NAME_CORE)}${pick(NAME_TITLE)}`;
+}
+
 let talentState = loadTalentState();
 let profileState = loadProfileState();
 let state = createNewGame(talentState.upgrades, profileState.boosts);
@@ -362,15 +372,6 @@ function loadProfileState() {
   }
 }
 
-const NAME_PREFIX = ['赤', '金', '青', '苍', '幽', '雷', '霜', '烈', '夜', '银'];
-const NAME_CORE = ['鹰', '狼', '龙', '隼', '虎', '鲸', '鸦', '麟', '熊', '蛟'];
-const NAME_TITLE = ['统帅', '将军', '督军', '舰长', '总督', '军师'];
-
-function randomName() {
-  const pick = list => list[Math.floor(Math.random() * list.length)];
-  return `${pick(NAME_PREFIX)}${pick(NAME_CORE)}${pick(NAME_TITLE)}`;
-}
-
 function normalizeProfileState(input) {
   return {
     name: typeof input?.name === 'string' && input.name.trim() ? input.name : randomName(),
@@ -443,8 +444,6 @@ function renderShop() {
     button.addEventListener('click', () => buyShopItem(button.dataset.shopItem));
   }
 }
-
-const EXTRA_CITY_LIMIT = 2;
 
 function buyShopItem(itemId) {
   const item = SHOP_ITEMS[itemId];
