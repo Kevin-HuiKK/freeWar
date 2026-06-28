@@ -9,22 +9,101 @@ export const VICTORY_RULES = {
 export const TALENTS = {
   capitalExpansion: {
     id: 'capitalExpansion',
+    branch: 'city',
     name: '主城扩建',
     max: 3,
     desc: '每级使开局主城等级 +1，并提高主城防御。',
   },
   grandRoads: {
     id: 'grandRoads',
+    branch: 'connect',
     name: '宏大道路',
     max: 3,
     desc: '每级降低建路和升级连接的金币、劳力消耗。',
   },
   harborWorks: {
     id: 'harborWorks',
+    branch: 'trade',
     name: '海港船坞',
     max: 3,
     desc: '每级增加开局金币与劳力，并强化港口舰队。',
   },
+  doubleLanes: {
+    id: 'doubleLanes',
+    branch: 'connect',
+    name: '双行通道',
+    max: 1,
+    prereq: ['grandRoads'],
+    desc: '己方城市间调兵比例提高，连接更像双行道。',
+  },
+  swiftRoads: {
+    id: 'swiftRoads',
+    branch: 'connect',
+    name: '连接速度',
+    max: 3,
+    prereq: ['grandRoads'],
+    desc: '提升道路效率，进一步降低连接升级成本。',
+  },
+  extraAction: {
+    id: 'extraAction',
+    branch: 'command',
+    name: '每回合行动 +1',
+    max: 3,
+    desc: '每级增加 1 点每回合行动点。',
+  },
+  assaultDrill: {
+    id: 'assaultDrill',
+    branch: 'attack',
+    name: '进攻训练',
+    max: 3,
+    desc: '每级提升进攻方战力。',
+  },
+  openingInfantry: {
+    id: 'openingInfantry',
+    branch: 'attack',
+    name: '初始步兵',
+    max: 3,
+    desc: '每级使主城开局额外获得 1 名步兵。',
+  },
+  openingCavalry: {
+    id: 'openingCavalry',
+    branch: 'attack',
+    name: '初始骑兵',
+    max: 3,
+    prereq: ['openingInfantry'],
+    desc: '每级使主城开局额外获得 1 名骑兵。',
+  },
+  merchantGuild: {
+    id: 'merchantGuild',
+    branch: 'trade',
+    name: '商会税契',
+    max: 5,
+    desc: '每级增加开局金币。',
+  },
+  talentDividend: {
+    id: 'talentDividend',
+    branch: 'trade',
+    name: '胜利分红',
+    max: 2,
+    prereq: ['merchantGuild'],
+    desc: '满级后每次胜利额外获得 1 点天赋。',
+  },
+  defenseMatrix: {
+    id: 'defenseMatrix',
+    branch: 'city',
+    name: '城防矩阵',
+    max: 5,
+    prereq: ['capitalExpansion'],
+    desc: '每级提高己方城市防御。',
+  },
+};
+
+export const TALENT_BRANCHES = {
+  connect: { id: 'connect', name: '连接', color: '#9b6931' },
+  command: { id: 'command', name: '行动', color: '#8a4d8f' },
+  attack: { id: 'attack', name: '进攻', color: '#b94a3f' },
+  city: { id: 'city', name: '城市', color: '#d0a23e' },
+  trade: { id: 'trade', name: '交易', color: '#4d8aa8' },
 };
 
 export const FACTIONS = {
@@ -85,6 +164,14 @@ export const RESOURCE_NAMES = {
   influence: '影响',
 };
 
+export const MAP_MARKER_TYPES = {
+  grain: { name: '粮食', icon: '◌', color: '#b98021' },
+  ore: { name: '矿产', icon: '◆', color: '#366f93' },
+  relic: { name: '遗迹', icon: '△', color: '#9f3730' },
+  shop: { name: '商店', icon: '田', color: '#7a3f7d' },
+  storm: { name: '风暴', icon: '◍', color: '#6d8aa6' },
+};
+
 export const CITY_DEFS = [
   { id: 'c_aurea', name: '金鸢城', x: 570, y: 575, type: 'capital', level: 3, owner: 'player', tags: ['capital', 'trade'] },
   { id: 'c_westmill', name: '西磨镇', x: 420, y: 535, type: 'resource', level: 2, owner: 'player', tags: ['resource'] },
@@ -128,6 +215,26 @@ export const CITY_DEFS = [
   { id: 'c_drywell', name: '旱井', x: 1130, y: 150, type: 'village', level: 1, owner: null, tags: [] },
   { id: 'c_moonpass', name: '月隘', x: 1530, y: 190, type: 'fortress', level: 1, owner: null, tags: ['fortress'] },
   { id: 'c_amberholm', name: '琥珀洲', x: 1760, y: 860, type: 'resource', level: 1, owner: null, tags: ['resource', 'island'] },
+];
+
+export const MAP_MARKERS = [
+  { id: 'm_grain_1', type: 'grain', x: 300, y: 520 },
+  { id: 'm_grain_2', type: 'grain', x: 610, y: 660 },
+  { id: 'm_grain_3', type: 'grain', x: 1380, y: 255 },
+  { id: 'm_grain_4', type: 'grain', x: 1500, y: 760 },
+  { id: 'm_ore_1', type: 'ore', x: 490, y: 365 },
+  { id: 'm_ore_2', type: 'ore', x: 805, y: 615 },
+  { id: 'm_ore_3', type: 'ore', x: 1120, y: 735 },
+  { id: 'm_ore_4', type: 'ore', x: 1650, y: 805 },
+  { id: 'm_relic_1', type: 'relic', x: 555, y: 285 },
+  { id: 'm_relic_2', type: 'relic', x: 1185, y: 190 },
+  { id: 'm_relic_3', type: 'relic', x: 1570, y: 395 },
+  { id: 'm_shop_1', type: 'shop', x: 1025, y: 520 },
+  { id: 'm_shop_2', type: 'shop', x: 730, y: 865 },
+  { id: 'm_shop_3', type: 'shop', x: 1775, y: 705 },
+  { id: 'm_storm_1', type: 'storm', x: 220, y: 930 },
+  { id: 'm_storm_2', type: 'storm', x: 915, y: 930 },
+  { id: 'm_storm_3', type: 'storm', x: 1715, y: 480 },
 ];
 
 const roadPairs = [

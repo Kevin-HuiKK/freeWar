@@ -148,7 +148,7 @@ export function upgradeCost(route) {
 
 export function adjustedCost(state, cost, factionId) {
   if (factionId !== 'player') return { ...cost };
-  const discount = Math.min(0.3, (state.talents?.grandRoads || 0) * 0.1);
+  const discount = Math.min(0.45, (state.talents?.grandRoads || 0) * 0.1 + (state.talents?.swiftRoads || 0) * 0.05);
   if (!discount) return { ...cost };
   const out = {};
   for (const [key, value] of Object.entries(cost)) {

@@ -1,4 +1,4 @@
-import { ALL_ROUTE_CANDIDATES, CITY_TYPES, FACTIONS, WORLD, candidateId } from '../data/map-data.js';
+import { ALL_ROUTE_CANDIDATES, CITY_TYPES, FACTIONS, MAP_MARKERS, MAP_MARKER_TYPES, WORLD, candidateId } from '../data/map-data.js';
 import { activeRoutes, cityById } from '../core/game-state.js';
 import { calculateInfluenceRadius } from '../systems/growth-system.js';
 
@@ -22,11 +22,44 @@ export function renderMap(ctx, state, assets, camera, timeMs) {
   applyCamera(ctx, camera);
   drawBackground(ctx);
   drawInfluence(ctx, state);
+  drawMapMarkers(ctx);
   drawRouteCandidates(ctx, state);
   drawRoutes(ctx, state, timeMs);
   drawCities(ctx, state);
   drawSelection(ctx, state);
   ctx.restore();
+}
+
+function drawMapMarkers(ctx) {
+  for (const marker of MAP_MARKERS) {
+    const type = MAP_MARKER_TYPES[marker.type];
+    if (!type) continue;
+    ctx.save();
+    ctx.translate(marker.x, marker.y);
+    ctx.globalAlpha = marker.type === 'storm' ? 0.72 : 0.9;
+    ctx.fillStyle = 'rgba(240, 229, 202, 0.66)';
+    ctx.strokeStyle = type.color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    if (marker.type === 'relic') {
+      ctx.moveTo(0, -13);
+      ctx.lineTo(13, 12);
+      ctx.lineTo(-13, 12);
+      ctx.closePath();
+    } else if (marker.type === 'shop') {
+      ctx.rect(-12, -12, 24, 24);
+    } else {
+      ctx.arc(0, 0, 12, 0, Math.PI * 2);
+    }
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = type.color;
+    ctx.font = '900 17px "PingFang SC", system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(type.icon, 0, 0);
+    ctx.restore();
+  }
 }
 
 export function hitTestCity(state, worldX, worldY) {

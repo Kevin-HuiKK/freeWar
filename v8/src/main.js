@@ -1,5 +1,5 @@
-import { addLog, consumeAction, createNewGame, cityById, resetActions, resourceCities, routeById } from './core/game-state.js';
-import { ACTIONS_PER_TURN, CITY_TYPES, FACTIONS, RESOURCE_NAMES, TALENTS, UNIT_TYPES, VICTORY_RULES } from './data/map-data.js';
+import { actionLimit, addLog, consumeAction, createNewGame, cityById, resetActions, resourceCities, routeById } from './core/game-state.js';
+import { CITY_TYPES, FACTIONS, RESOURCE_NAMES, TALENT_BRANCHES, TALENTS, UNIT_TYPES, VICTORY_RULES } from './data/map-data.js';
 import { renderMap, fitCamera } from './render/map-renderer.js';
 import { createInputController } from './ui/input-controller.js';
 import { applyAllIncome } from './systems/economy-system.js';
@@ -30,10 +30,25 @@ const actionPips = document.getElementById('action-pips');
 const factionStats = document.getElementById('faction-stats');
 const talentPointsEl = document.getElementById('talent-points');
 const talentList = document.getElementById('talent-list');
+const startScreen = document.getElementById('start-screen');
+const startGameBtn = document.getElementById('start-game');
+const resetProfileBtn = document.getElementById('reset-profile');
+const statWins = document.getElementById('stat-wins');
+const statLosses = document.getElementById('stat-losses');
+const statShopGold = document.getElementById('stat-shop-gold');
+const rankList = document.getElementById('rank-list');
+const shopList = document.getElementById('shop-list');
 
 const TALENT_STORAGE_KEY = 'freewar_v8_talent_state';
+const PROFILE_STORAGE_KEY = 'freewar_v8_profile';
+const SHOP_ITEMS = {
+  supplyChest: { name: '补给箱', cost: 5, desc: '下一局金币 +30、粮食 +20' },
+  volunteerCamp: { name: '民兵营', cost: 8, desc: '下一局主城步兵 +2、守卫 +1' },
+  warBanner: { name: '战旗', cost: 12, desc: '下一局进攻战力 +10%' },
+};
 let talentState = loadTalentState();
-let state = createNewGame(talentState.upgrades);
+let profileState = loadProfileState();
+let state = createNewGame(talentState.upgrades, profileState.boosts);
 let camera = { scale: 1, x: 0, y: 0 };
 
 function resize() {
@@ -61,6 +76,8 @@ function renderHUD() {
   renderActionPips();
   renderFactionStats();
   renderTalents();
+  renderProfile();
+  renderShop();
 }
 
 function renderSelection() {
@@ -121,7 +138,8 @@ function addTrainButtons(root, city) {
     btn.disabled = !check.ok;
     btn.title = check.msg;
     btn.innerHTML = `<span>${unit.icon} ${unit.name}</span><small>${costText(unit.cost)}</small>`;
-    btn.addEventListener('click', () => runPlayerAction(() => trainUnit(state, 'player', city.id, unitId)));
+    btn.dataset.freeAction = 'true';
+    btn.addEventListener('click', () => runPlayerAction(() => trainUnit(state, 'player', city.id, unitId), { consumesAction: false }));
     group.appendChild(btn);
   }
   root.appendChild(group);
@@ -204,6 +222,7 @@ function renderBanner() {
     banner.hidden = true;
     return;
   }
+  updateProfileForWinner();
   banner.hidden = false;
   if (state.winner === 'player') {
     banner.innerHTML = `
@@ -217,15 +236,15 @@ function renderBanner() {
   }
 }
 
-function runPlayerAction(action) {
+function runPlayerAction(action, options = { consumesAction: true }) {
   if (state.winner) return;
-  if ((state.actionsRemaining || 0) <= 0) {
-    addLog(state, `本回合行动已用完，每回合最多 ${ACTIONS_PER_TURN} 项。`);
+  if (options.consumesAction && (state.actionsRemaining || 0) <= 0) {
+    addLog(state, `本回合行动已用完，每回合最多 ${actionLimit(state.talents)} 项。训练仍可继续。`);
     renderHUD();
     return;
   }
   const result = action();
-  if (result.ok) consumeAction(state);
+  if (result.ok && options.consumesAction) consumeAction(state);
   runAction(result);
 }
 
@@ -256,7 +275,7 @@ function endTurn() {
 }
 
 function restart() {
-  state = createNewGame(talentState.upgrades);
+  state = createNewGame(talentState.upgrades, profileState.boosts);
   renderHUD();
 }
 
@@ -277,7 +296,8 @@ function renderObjectives() {
 
 function renderActionPips() {
   if (!actionPips) return;
-  actionPips.innerHTML = Array.from({ length: ACTIONS_PER_TURN }, (_, index) => (
+  const limit = actionLimit(state.talents);
+  actionPips.innerHTML = Array.from({ length: limit }, (_, index) => (
     `<i class="${index < state.actionsRemaining ? 'active' : ''}"></i>`
   )).join('');
 }
@@ -299,6 +319,7 @@ function ownedCapitalCount(factionId) {
 function applyActionLock(root) {
   if ((state.actionsRemaining || 0) > 0) return;
   for (const button of root.querySelectorAll('button')) {
+    if (button.dataset.freeAction === 'true') continue;
     button.disabled = true;
     button.title = '本回合行动已用完';
   }
@@ -325,32 +346,123 @@ function normalizeTalentState(input) {
   };
 }
 
+function loadProfileState() {
+  try {
+    return normalizeProfileState(JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY) || '{}'));
+  } catch {
+    return normalizeProfileState({});
+  }
+}
+
+function normalizeProfileState(input) {
+  return {
+    wins: Math.max(0, Number(input?.wins || 0)),
+    losses: Math.max(0, Number(input?.losses || 0)),
+    shopGold: Math.max(0, Number(input?.shopGold ?? 5)),
+    boosts: normalizeBoosts(input?.boosts),
+    recordedGames: Array.isArray(input?.recordedGames) ? input.recordedGames : [],
+  };
+}
+
+function normalizeBoosts(input = {}) {
+  return Object.fromEntries(Object.keys(SHOP_ITEMS).map(id => [id, Math.max(0, Number(input?.[id] || 0))]));
+}
+
+function saveProfileState() {
+  localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profileState));
+}
+
+function updateProfileForWinner() {
+  if (!state.winner || state.profileRecorded) return;
+  state.profileRecorded = true;
+  profileState.recordedGames = [...profileState.recordedGames.slice(-19), state.turn + ':' + state.winner];
+  if (state.winner === 'player') {
+    profileState.wins += 1;
+    profileState.shopGold += 5 + (talentState.upgrades.talentDividend >= TALENTS.talentDividend.max ? 2 : 0);
+  } else {
+    profileState.losses += 1;
+    profileState.shopGold += 1;
+  }
+  saveProfileState();
+}
+
+function renderProfile() {
+  if (statWins) statWins.textContent = profileState.wins;
+  if (statLosses) statLosses.textContent = profileState.losses;
+  if (statShopGold) statShopGold.textContent = profileState.shopGold;
+  if (rankList) {
+    const score = profileState.wins * 3000 + profileState.shopGold * 20 - profileState.losses * 400;
+    const entries = [
+      ['AAA', 12345],
+      ['王冕', 9000],
+      ['本机玩家', Math.max(0, score)],
+      ['作者', 6000],
+    ].sort((a, b) => b[1] - a[1]).slice(0, 4);
+    rankList.innerHTML = entries.map(([name, value]) => `<li>${escapeHtml(name)} · ${value}</li>`).join('');
+  }
+}
+
+function renderShop() {
+  if (!shopList) return;
+  shopList.innerHTML = Object.entries(SHOP_ITEMS).map(([id, item]) => {
+    const queued = profileState.boosts[id] || 0;
+    const disabled = profileState.shopGold < item.cost;
+    return `
+      <button type="button" data-shop-item="${id}" ${disabled ? 'disabled' : ''}>
+        <span>${item.name} · ${item.cost} 金币${queued ? ` · 待用 ${queued}` : ''}</span>
+        <small>${item.desc}</small>
+      </button>
+    `;
+  }).join('');
+  for (const button of shopList.querySelectorAll('[data-shop-item]')) {
+    button.addEventListener('click', () => buyShopItem(button.dataset.shopItem));
+  }
+}
+
+function buyShopItem(itemId) {
+  const item = SHOP_ITEMS[itemId];
+  if (!item || profileState.shopGold < item.cost) return;
+  profileState.shopGold -= item.cost;
+  profileState.boosts[itemId] = (profileState.boosts[itemId] || 0) + 1;
+  saveProfileState();
+  state = createNewGame(talentState.upgrades, profileState.boosts);
+  addLog(state, `商店购买：${item.name} 已加入下一局补给。`);
+  renderHUD();
+}
+
+function consumeQueuedBoosts() {
+  const hasBoost = Object.values(profileState.boosts).some(value => value > 0);
+  if (!hasBoost) return;
+  profileState.boosts = normalizeBoosts({});
+  saveProfileState();
+  renderProfile();
+  renderShop();
+}
+
 function saveTalentState() {
   localStorage.setItem(TALENT_STORAGE_KEY, JSON.stringify(talentState));
 }
 
 function claimTalentReward() {
   if (state.winner !== 'player' || state.rewardClaimed) return;
-  talentState.points += 1;
+  const bonus = talentState.upgrades.talentDividend >= TALENTS.talentDividend.max ? 1 : 0;
+  talentState.points += 1 + bonus;
   state.rewardClaimed = true;
   saveTalentState();
-  addLog(state, '胜利奖励：获得 1 点永久天赋。');
+  addLog(state, `胜利奖励：获得 ${1 + bonus} 点永久天赋。`);
   renderHUD();
 }
 
 function renderTalents() {
   if (!talentList || !talentPointsEl) return;
   talentPointsEl.textContent = talentState.points;
-  talentList.innerHTML = Object.values(TALENTS).map(talent => {
-    const level = talentState.upgrades[talent.id] || 0;
-    const maxed = level >= talent.max;
-    const disabled = talentState.points <= 0 || maxed;
+  talentList.innerHTML = Object.values(TALENT_BRANCHES).map(branch => {
+    const talents = Object.values(TALENTS).filter(talent => talent.branch === branch.id);
     return `
-      <button class="talent-card" type="button" data-talent="${talent.id}" ${disabled ? 'disabled' : ''}>
-        <span><b>${talent.name}</b><i>Lv.${level}/${talent.max}</i></span>
-        <small>${talent.desc}</small>
-        <em>${maxed ? '已满级' : '消耗 1 点升级'}</em>
-      </button>
+      <section class="talent-branch" style="--branch:${branch.color}">
+        <h3>${branch.name}</h3>
+        ${talents.map(talent => talentButtonHtml(talent)).join('')}
+      </section>
     `;
   }).join('');
   for (const button of talentList.querySelectorAll('[data-talent]')) {
@@ -358,9 +470,30 @@ function renderTalents() {
   }
 }
 
+function talentButtonHtml(talent) {
+  const level = talentState.upgrades[talent.id] || 0;
+  const maxed = level >= talent.max;
+  const locked = !talentUnlocked(talent);
+  const disabled = talentState.points <= 0 || maxed || locked;
+  const req = locked ? `需要：${talent.prereq.map(id => TALENTS[id].name).join(' / ')}` : '';
+  return `
+    <button class="talent-card" type="button" data-talent="${talent.id}" ${disabled ? 'disabled' : ''}>
+      <span><b>${talent.name}</b><i>Lv.${level}/${talent.max}</i></span>
+      <small>${talent.desc}</small>
+      <em>${locked ? req : (maxed ? '已满级' : '消耗 1 点升级')}</em>
+    </button>
+  `;
+}
+
+function talentUnlocked(talent) {
+  if (!talent.prereq?.length) return true;
+  return talent.prereq.every(id => (talentState.upgrades[id] || 0) > 0);
+}
+
 function upgradeTalent(talentId) {
   const talent = TALENTS[talentId];
   if (!talent || talentState.points <= 0) return;
+  if (!talentUnlocked(talent)) return;
   const current = talentState.upgrades[talentId] || 0;
   if (current >= talent.max) return;
   talentState.points -= 1;
@@ -373,6 +506,27 @@ function upgradeTalent(talentId) {
 window.addEventListener('resize', resize);
 endTurnBtn.addEventListener('click', endTurn);
 restartBtn.addEventListener('click', restart);
+startGameBtn?.addEventListener('click', () => {
+  startScreen.hidden = true;
+  consumeQueuedBoosts();
+  resize();
+});
+for (const button of document.querySelectorAll('[data-start-jump]')) {
+  button.addEventListener('click', () => {
+    startScreen.hidden = true;
+    consumeQueuedBoosts();
+    document.querySelector(button.dataset.startJump === 'talent' ? '.manual-panel' : '.rule-grid')?.scrollIntoView({ behavior: 'smooth' });
+    resize();
+  });
+}
+resetProfileBtn?.addEventListener('click', () => {
+  profileState = normalizeProfileState({});
+  talentState = normalizeTalentState({});
+  saveProfileState();
+  saveTalentState();
+  state = createNewGame(talentState.upgrades);
+  renderHUD();
+});
 
 createInputController(canvas, () => state, () => camera, {
   onHover(target) {

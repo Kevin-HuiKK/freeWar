@@ -9,6 +9,50 @@
 </head>
 <body>
   <main class="mechanism-board">
+    <section id="start-screen" class="start-screen">
+      <div class="start-card">
+        <header>
+          <span>作者 · le'o</span>
+          <h1>城市网络战争</h1>
+          <p>开局拥有 1 座首都和若干相邻城市。通过连接、贸易和进攻，占领全部 3 个首都。</p>
+        </header>
+        <div class="start-grid">
+          <section>
+            <h2>玩家档案</h2>
+            <dl class="profile-stats">
+              <dt>胜场</dt><dd id="stat-wins">0</dd>
+              <dt>败场</dt><dd id="stat-losses">0</dd>
+              <dt>商店金币</dt><dd id="stat-shop-gold">5</dd>
+            </dl>
+          </section>
+          <section>
+            <h2>开局模式</h2>
+            <p>默认模式：标准大陆战役</p>
+            <p>胜利条件：占领 3 个首都</p>
+            <p>训练不消耗行动点，扩张和进攻消耗行动点。</p>
+          </section>
+          <section>
+            <h2>排行榜</h2>
+            <ol id="rank-list" class="rank-list">
+              <li>AAA · 12345</li>
+              <li>王冕 · 9000</li>
+              <li>作者 · 6000</li>
+            </ol>
+          </section>
+          <section>
+            <h2>商店</h2>
+            <div id="shop-list" class="shop-list"></div>
+          </section>
+        </div>
+        <div class="start-actions">
+          <button id="start-game" type="button">开始游戏</button>
+          <button type="button" data-start-jump="talent">天赋树</button>
+          <button type="button" data-start-jump="rules">说明书</button>
+          <button id="reset-profile" type="button">重置本机档案</button>
+        </div>
+      </div>
+    </section>
+
     <aside class="manual-panel">
       <h1>机制总览</h1>
       <p><b>游戏目标：</b>通过城市网络扩张与战争，最终占领 3 个首都。</p>
@@ -33,6 +77,7 @@
           <li><i class="legend-icon resource"></i><span><b>资源点</b>提供金币、劳力和发展资源。</span></li>
           <li><i class="legend-icon town"></i><span><b>城镇</b>连接城市节点，扩大控制范围。</span></li>
           <li><i class="legend-icon port"></i><span><b>港口</b>可进行海路移动与贸易。</span></li>
+          <li><i class="legend-icon shop"></i><span><b>商店 / 遗迹</b>地图奖励点，后续可接入一次性道具。</span></li>
           <li><i class="legend-line road"></i><span><b>连接路线</b>城市之间的移动和贸易通道。</span></li>
           <li><i class="legend-line sea"></i><span><b>陆路 / 海路</b>蓝色虚线为海路，必须连接港口。</span></li>
           <li><i class="legend-ring"></i><span><b>影响范围</b>以己方城市为中心投射控制范围。</span></li>
@@ -66,13 +111,13 @@
 
     <section class="rule-grid">
       <article class="rule-card wide">
-        <h2>2. 基本行动（每回合可执行 2 项）</h2>
+        <h2>2. 基本行动（基础 2 点行动）</h2>
         <ul>
           <li>移动：将部队从一个己方城市移动到相邻连接城市。</li>
           <li>占领：攻击相邻敌方城市，战斗胜利后占领。</li>
           <li>建设：在己方城市建立道路或港口海路。</li>
           <li>贸易：通过港口或连接路线获得资源与影响力。</li>
-          <li>招募：消耗资源招募部队。</li>
+          <li>招募：消耗资源招募部队，不消耗行动点。</li>
         </ul>
       </article>
 
@@ -113,7 +158,7 @@
           <li>城市成长</li>
           <li>敌方行动</li>
           <li>胜利检查</li>
-          <li>恢复 2 点行动</li>
+          <li>恢复基础 2 点行动，天赋可提高上限</li>
         </ol>
       </article>
 

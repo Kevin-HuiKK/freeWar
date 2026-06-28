@@ -11,8 +11,9 @@ import {
   candidateId,
 } from '../data/map-data.js';
 
-export function createNewGame(talentUpgrades = {}) {
+export function createNewGame(talentUpgrades = {}, profileBoosts = {}) {
   const talents = normalizeTalents(talentUpgrades);
+  const boosts = normalizeProfileBoosts(profileBoosts);
   const cities = {};
   const factions = {};
   const routes = {};
@@ -22,7 +23,7 @@ export function createNewGame(talentUpgrades = {}) {
     factions[fid] = {
       ...FACTIONS[fid],
       alive: true,
-      resources: fid === 'player' ? startingResourcesWithTalents(talents) : { ...STARTING_RESOURCES },
+      resources: fid === 'player' ? startingResourcesWithTalents(talents, boosts) : { ...STARTING_RESOURCES },
       talents: [],
     };
   }
@@ -39,7 +40,7 @@ export function createNewGame(talentUpgrades = {}) {
       isolated: false,
       garrison: startingGarrison(def),
     };
-    if (def.owner === 'player') applyCityTalentBonuses(cities[def.id], talents);
+    if (def.owner === 'player') applyCityTalentBonuses(cities[def.id], talents, boosts);
   }
 
   for (const [from, to, owner, kind] of INITIAL_ROUTES) {
@@ -71,11 +72,13 @@ export function createNewGame(talentUpgrades = {}) {
   return {
     turn: 1,
     phase: 'player',
-    actionsRemaining: ACTIONS_PER_TURN,
+    actionsRemaining: actionLimit(talents),
     selected: { kind: 'city', id: FACTIONS.player.capitalId },
     hover: null,
     winner: null,
     rewardClaimed: false,
+    profileRecorded: false,
+    profileBoosts: boosts,
     talents,
     factions,
     cities,
@@ -94,25 +97,40 @@ function normalizeTalents(input = {}) {
   return out;
 }
 
-function startingResourcesWithTalents(talents) {
+function normalizeProfileBoosts(input = {}) {
+  return {
+    supplyChest: Math.max(0, Number(input.supplyChest || 0)),
+    volunteerCamp: Math.max(0, Number(input.volunteerCamp || 0)),
+    warBanner: Math.max(0, Number(input.warBanner || 0)),
+  };
+}
+
+function startingResourcesWithTalents(talents, boosts) {
   const harbor = talents.harborWorks || 0;
+  const merchants = talents.merchantGuild || 0;
   return {
     ...STARTING_RESOURCES,
-    gold: STARTING_RESOURCES.gold + harbor * 28,
+    gold: STARTING_RESOURCES.gold + harbor * 28 + merchants * 20 + boosts.supplyChest * 30,
+    food: STARTING_RESOURCES.food + boosts.supplyChest * 20,
     labor: STARTING_RESOURCES.labor + harbor * 12,
   };
 }
 
-function applyCityTalentBonuses(city, talents) {
+function applyCityTalentBonuses(city, talents, boosts) {
   if (city.type === 'capital') {
     const level = talents.capitalExpansion || 0;
     city.level += level;
     city.defense += level * 4;
     city.garrison.guard += level;
+    city.garrison.infantry += talents.openingInfantry || 0;
+    city.garrison.cavalry += talents.openingCavalry || 0;
+    city.garrison.infantry += boosts.volunteerCamp * 2;
+    city.garrison.guard += boosts.volunteerCamp;
   }
   if (city.tags?.includes('port')) {
     city.garrison.fleet += talents.harborWorks || 0;
   }
+  city.defense += talents.defenseMatrix || 0;
 }
 
 function startingGarrison(def) {
@@ -166,7 +184,7 @@ export function addLog(state, message) {
 }
 
 export function resetActions(state) {
-  state.actionsRemaining = ACTIONS_PER_TURN;
+  state.actionsRemaining = actionLimit(state.talents);
 }
 
 export function consumeAction(state) {
@@ -219,4 +237,8 @@ export function resourceCities(state, factionId = null) {
     const resource = city.type === 'resource' || city.tags?.includes('resource') || city.tags?.includes('trade') || city.tags?.includes('port');
     return resource && (!factionId || city.owner === factionId);
   });
+}
+
+export function actionLimit(talents = {}) {
+  return ACTIONS_PER_TURN + (talents.extraAction || 0);
 }

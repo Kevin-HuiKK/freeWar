@@ -41,8 +41,9 @@ export function moveArmy(state, factionId, fromCityId, toCityId) {
     return (r.from === fromCityId && r.to === toCityId) || (r.from === toCityId && r.to === fromCityId);
   });
   if (!route) return { ok: false, msg: '两城之间没有己方连接' };
+  const transferRate = factionId === 'player' && state.talents?.doubleLanes ? 0.75 : 0.5;
   for (const unitId of Object.keys(from.garrison)) {
-    const moving = Math.floor(from.garrison[unitId] / 2);
+    const moving = Math.floor(from.garrison[unitId] * transferRate);
     from.garrison[unitId] -= moving;
     to.garrison[unitId] += moving;
   }
@@ -62,7 +63,9 @@ export function attackCity(state, factionId, fromCityId, targetCityId) {
   if (!route) return { ok: false, msg: '必须沿现有连接进攻' };
   if (route.kind === 'sea' && from.garrison.fleet <= 0) return { ok: false, msg: '跨海进攻需要舰队' };
   const attackingUnits = { ...from.garrison };
-  const attackPower = armyPower(attackingUnits, target.type === 'fortress' || target.type === 'capital' ? 'siege' : 'field');
+  const attackTalent = factionId === 'player' ? (state.talents?.assaultDrill || 0) : 0;
+  const attackBoost = factionId === 'player' ? (state.profileBoosts?.warBanner || 0) : 0;
+  const attackPower = armyPower(attackingUnits, target.type === 'fortress' || target.type === 'capital' ? 'siege' : 'field') * (1 + attackTalent * 0.12 + attackBoost * 0.1);
   if (attackPower < 2) return { ok: false, msg: '出发城市没有可用部队' };
   const defensePower = target.defense + armyPower(target.garrison, 'defense') + target.level * 2;
   const ratio = attackPower / Math.max(1, defensePower);
