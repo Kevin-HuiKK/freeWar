@@ -173,8 +173,12 @@ function addNeighborActions(root, city) {
       btn.innerHTML = `<span>调兵至 ${target.name}</span><small>${route.kind === 'sea' ? '海路' : '道路'} Lv.${route.level}</small>`;
       btn.dataset.freeAction = 'true';
       btn.addEventListener('click', () => runPlayerAction(() => moveArmy(state, 'player', city.id, target.id), { consumesAction: false }));
-    } else if (target.owner && target.owner !== 'player' && route?.status === 'active') {
-      btn.innerHTML = `<span>进攻 ${target.name}</span><small>${FACTIONS[target.owner].shortName} · ${route.kind === 'sea' ? '需舰队' : '陆路'} · 消耗行动点</small>`;
+    } else if (target.owner && target.owner !== 'player') {
+      const seaAttack = option.kind === 'sea';
+      const canAttack = !seaAttack || city.garrison.fleet > 0;
+      btn.innerHTML = `<span>进攻 ${target.name}</span><small>${FACTIONS[target.owner].shortName} · ${seaAttack ? '需舰队' : '陆路'} · 消耗行动点</small>`;
+      btn.disabled = !canAttack;
+      btn.title = canAttack ? '' : '跨海进攻需要舰队';
       btn.addEventListener('click', () => runPlayerAction(() => attackCity(state, 'player', city.id, target.id)));
     } else {
       const check = canBuildRoute(state, 'player', city.id, target.id);

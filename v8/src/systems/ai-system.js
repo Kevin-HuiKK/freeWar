@@ -27,8 +27,7 @@ function tryAttackWeakNeighbor(state, factionId, cities) {
     const options = routeCandidatesFrom(state, city.id);
     for (const option of options) {
       const target = cityById(state, option.other);
-      const route = state.routes[option.id];
-      if (!target || target.owner === factionId || !target.owner || !route || route.status !== 'active') continue;
+      if (!target || target.owner === factionId || !target.owner) continue;
       if (target.level <= city.level || target.owner === 'player') {
         const result = attackCity(state, factionId, city.id, target.id);
         if (result.ok) return true;

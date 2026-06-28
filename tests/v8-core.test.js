@@ -84,6 +84,25 @@ describe('v8 city network core', () => {
     expect(city.growth).toBeGreaterThanOrEqual(0);
   });
 
+  it('attacks an adjacent enemy city across an unbuilt route candidate', () => {
+    const state = createNewGame();
+    // Make the player hold a frontier city that is map-adjacent to a crimson city
+    // (c_eastgate <-> c_emberfall is a road candidate) with no pre-built route.
+    const front = cityById(state, 'c_eastgate');
+    front.owner = 'player';
+    front.garrison = { infantry: 40, cavalry: 0, engineer: 0, siege: 8, guard: 0, fleet: 0 };
+    const target = cityById(state, 'c_emberfall');
+    expect(target.owner).toBe('crimson');
+    const result = attackCity(state, 'player', 'c_eastgate', 'c_emberfall');
+    expect(result.ok).toBe(true);
+    expect(cityById(state, 'c_emberfall').owner).toBe('player');
+    // capture forged an owned, active connecting road
+    const link = Object.values(state.routes).find(r =>
+      (r.from === 'c_eastgate' && r.to === 'c_emberfall') || (r.from === 'c_emberfall' && r.to === 'c_eastgate'));
+    expect(link?.owner).toBe('player');
+    expect(link?.status).toBe('active');
+  });
+
   it('trains units and attacks across an active route', () => {
     const state = createNewGame();
     buildRoute(state, 'player', 'c_aurea', 'c_ashbridge');

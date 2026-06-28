@@ -1,4 +1,4 @@
-import { FACTION_IDS, UNIT_TYPES, VICTORY_RULES } from '../data/map-data.js';
+import { FACTION_IDS, UNIT_TYPES, VICTORY_RULES, candidateId } from '../data/map-data.js';
 import {
   addLog,
   armyPower,
@@ -8,7 +8,7 @@ import {
   spendResources,
   totalUnits,
 } from '../core/game-state.js';
-import { cutRoute } from './route-system.js';
+import { candidateBetween, cutRoute } from './route-system.js';
 
 export function trainUnit(state, factionId, cityId, unitId) {
   const check = canTrainUnit(state, factionId, cityId, unitId);
@@ -56,12 +56,16 @@ export function attackCity(state, factionId, fromCityId, targetCityId) {
   const target = cityById(state, targetCityId);
   if (!from || !target || from.owner !== factionId) return { ok: false, msg: '需要选择己方出发城市' };
   if (target.owner === factionId) return { ok: false, msg: '目标已经属于你' };
-  const route = Object.values(state.routes).find(r => {
+  // Attack along an existing active route, or across an unbuilt route candidate
+  // (any map-adjacent enemy city). Capturing forges the connecting road.
+  const activeRoute = Object.values(state.routes).find(r => {
     if (r.status !== 'active') return false;
     return (r.from === fromCityId && r.to === targetCityId) || (r.from === targetCityId && r.to === fromCityId);
   });
-  if (!route) return { ok: false, msg: '必须沿现有连接进攻' };
-  if (route.kind === 'sea' && from.garrison.fleet <= 0) return { ok: false, msg: '跨海进攻需要舰队' };
+  const candidate = activeRoute ? null : candidateBetween(fromCityId, targetCityId);
+  if (!activeRoute && !candidate) return { ok: false, msg: '必须与相邻城市进攻（两城之间没有可用路线）' };
+  const attackKind = activeRoute ? activeRoute.kind : candidate.kind;
+  if (attackKind === 'sea' && from.garrison.fleet <= 0) return { ok: false, msg: '跨海进攻需要舰队' };
   const attackingUnits = { ...from.garrison };
   const attackTalent = factionId === 'player' ? (state.talents?.assaultDrill || 0) : 0;
   const attackBoost = factionId === 'player' ? (state.profileBoosts?.retrofit || 0) : 0;
@@ -79,8 +83,25 @@ export function attackCity(state, factionId, fromCityId, targetCityId) {
     target.siege = false;
     target.isolated = false;
     target.garrison.infantry = Math.max(target.garrison.infantry, 1);
-    route.owner = factionId;
-    route.trade = true;
+    let link = activeRoute;
+    if (!link) {
+      const id = candidateId(candidate.from, candidate.to, attackKind);
+      link = state.routes[id] || (state.routes[id] = {
+        id,
+        from: candidate.from,
+        to: candidate.to,
+        owner: factionId,
+        kind: attackKind,
+        level: 1,
+        status: 'active',
+        trade: true,
+        military: attackKind === 'road',
+        progress: 0,
+      });
+    }
+    link.owner = factionId;
+    link.status = 'active';
+    link.trade = true;
     addLog(state, `${state.factions[factionId].shortName} 攻占 ${target.name}`);
     checkFactionDefeat(state, oldOwner);
     return { ok: true, msg: '城市已攻占' };
